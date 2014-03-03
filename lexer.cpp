@@ -109,6 +109,30 @@ Token Lexer::getNextToken()
         return token;
     }
 
+    // Brackets
+    if (curr == '[') {
+        token.type = TOKEN_OPEN_BRACKETS ;
+        token.value += curr;
+        return token;
+    }
+    if (curr == ']') {
+        token.type = TOKEN_CLOSE_BRACKETS ;
+        token.value += curr;
+        return token;
+    }
+
+    //Braces
+    if (curr == '{') {
+        token.type = TOKEN_OPEN_BRACES ;
+        token.value += curr;
+        return token;
+    }
+    if (curr == '}') {
+        token.type = TOKEN_CLOSE_BRACES ;
+        token.value += curr;
+        return token;
+    }
+
     // Comma
     if (curr == ',') {
         token.type = TOKEN_COMMA;
