@@ -8,10 +8,14 @@ namespace wait_for_it {
 enum TokenType {
     TOKEN_INVALID = -1,
     TOKEN_EOF = 'E',
-    TOKEN_NUMBER = 'N',
     TOKEN_IDENTIFIER = 'I',
+
+    // literals
+    TOKEN_NUMBER = 'N',
     TOKEN_STRING = 'S',
     TOKEN_CHAR = 'C',
+
+    // keywords
     TOKEN_DECLARATION_SPECIFIER = 'd',
     TOKEN_TYPE_SPECIFIER = 't',
     TOKEN_STRUCT = 'r',
@@ -28,7 +32,19 @@ enum TokenType {
     TOKEN_CONTINUE = 'i',
     TOKEN_BREAK = 'b',
     TOKEN_RETURN = 'R',
+
+    // symbols
     TOKEN_SPECIAL_SYMBOL = 'Y',
+    TOKEN_OPEN_PARENTHESIS = '(',
+    TOKEN_CLOSE_PARENTHESIS = ')',
+    TOKEN_COMMA = ',',
+    TOKEN_LESS_THAN = '<',
+    TOKEN_LESS_THAN_OR_EQUAL = '<=',
+    TOKEN_GREATER_THAN = '>',
+    TOKEN_GREATER_THAN_OR_EQUAL = '>=',
+    TOKEN_PLUS = '+',
+    TOKEN_MINUS = '-',
+    TOKEN_ASTERISK = '*',
     TOKEN_ELLIPSIS = '.'
 };
 

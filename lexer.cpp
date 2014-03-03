@@ -4,7 +4,7 @@
 
 using namespace wait_for_it;
 
-Lexer::Lexer(char *filename)
+Lexer::Lexer(const char *filename)
 {
     m_sourceStream = new std::ifstream(filename);
 }
@@ -17,7 +17,7 @@ Lexer::~Lexer()
 Token Lexer::getNextToken()
 {
     Token token;
-    char curr;
+    char curr, peek;
 
     curr = m_sourceStream->get();
 
@@ -27,7 +27,7 @@ Token Lexer::getNextToken()
 
         // Comments
         if (curr == '/') {
-            char peek = m_sourceStream->peek();
+            peek = m_sourceStream->peek();
             if (peek == '/') {
                 while (curr != '\n' && curr != '\r' && curr != EOF) {
                     curr = m_sourceStream->get();
@@ -49,9 +49,11 @@ Token Lexer::getNextToken()
     // Identifiers and keywords
     if (isalpha(curr)) {
         token.value += curr;
-        while(isalnum(curr = m_sourceStream->get()) || curr == '_') {
-            token.value += curr;
-        }
+        peek = m_sourceStream->peek();
+        while(isalnum(peek) || peek == '_') {
+            token.value += m_sourceStream->get();
+            peek = m_sourceStream->peek();
+        };
 
         token.type = llvm::StringSwitch<TokenType>(llvm::StringRef(token.value))
                 .Cases("typedef", "static", TOKEN_DECLARATION_SPECIFIER)
@@ -83,10 +85,54 @@ Token Lexer::getNextToken()
     // Numbers
     if(isdigit(curr)) {
         token.type = TOKEN_NUMBER;
+
+        token.value += curr;
+        peek = m_sourceStream->peek();
+        while(isdigit(peek) || peek == '.') {
+            token.value += m_sourceStream->get();
+            peek = m_sourceStream->peek();
+        };
+
+
+        return token;
+    }
+
+    // Parentheses
+    if (curr == '(') {
+        token.type = TOKEN_OPEN_PARENTHESIS;
+        token.value += curr;
+        return token;
+    }
+    if (curr == ')') {
+        token.type = TOKEN_CLOSE_PARENTHESIS;
+        token.value += curr;
+        return token;
+    }
+
+    // Comma
+    if (curr == ',') {
+        token.type = TOKEN_COMMA;
+        token.value += curr;
+        return token;
+    }
+
+    // String literals
+    if (curr == '"') {
+        token.type = TOKEN_STRING;
         do {
-            token.value += curr;
-            curr = m_sourceStream->get();
-        } while(isdigit(curr) || curr == '.');
+            token.value += m_sourceStream->get();
+            curr = m_sourceStream->peek();
+        } while(curr != '"');
+        m_sourceStream->get();
+
+        return token;
+    }
+
+    // Char literals
+    if (curr == '\'') {
+        token.type = TOKEN_CHAR;
+        token.value += m_sourceStream->get();
+        m_sourceStream->get();
 
         return token;
     }
@@ -96,9 +142,39 @@ Token Lexer::getNextToken()
     token.value += curr;
 
     // arithmetics
-    if (curr == '*' || curr == '/' || curr == '%' || curr == '+' || curr == '-') {
+    if (curr == '*') {
         if (m_sourceStream->peek() == '=') {
             token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_ASTERISK;
+        }
+        return token;
+    }
+    if (curr == '/') {
+        if (m_sourceStream->peek() == '=') {
+            token.value += m_sourceStream->get();
+        }
+        return token;
+    }
+    if (curr == '%') {
+        if (m_sourceStream->peek() == '=') {
+            token.value += m_sourceStream->get();
+        }
+        return token;
+    }
+    if (curr == '+') {
+        if (m_sourceStream->peek() == '=') {
+            token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_PLUS;
+        }
+        return token;
+    }
+    if (curr == '-') {
+        if (m_sourceStream->peek() == '=') {
+            token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_MINUS;
         }
         return token;
     }
@@ -107,14 +183,20 @@ Token Lexer::getNextToken()
     if (curr == '<' && m_sourceStream->peek() == '<') {
         token.value += m_sourceStream->get();
         if (m_sourceStream->peek() == '=') {
+            token.type = TOKEN_LESS_THAN_OR_EQUAL;
             token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_LESS_THAN;
         }
         return token;
     }
     if (curr == '>' && m_sourceStream->peek() == '>') {
         token.value += m_sourceStream->get();
         if (m_sourceStream->peek() == '=') {
+            token.type = TOKEN_GREATER_THAN_OR_EQUAL;
             token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_GREATER_THAN;
         }
         return token;
     }

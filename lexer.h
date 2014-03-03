@@ -11,7 +11,7 @@ class Lexer
 {
     std::ifstream *m_sourceStream;
 public:
-    Lexer(char *);
+    Lexer(const char *);
     virtual ~Lexer();
     Token getNextToken();
 };
