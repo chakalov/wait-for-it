@@ -1,17 +1,14 @@
 #include <cstdio>
 
 #include "lexer.h"
+#include "parser.h"
 
 using namespace wait_for_it;
 
 int main ()
 {
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/test1.txt");
+    Lexer lexer("/home/chakalov/qtprojects/llvm/test2.txt");
+    Parser parser(&lexer);
 
-    Token token;
-    do {
-        token = lexer.getNextToken();
-        printf("%c : [%s]\n", token.type, token.value.c_str());
-    }
-    while (token.type != TOKEN_EOF);
+    parser.parse();
 }

@@ -35,13 +35,14 @@ enum TokenType {
 
     // symbols
     TOKEN_SPECIAL_SYMBOL = 'Y',
-    TOKEN_OPEN_PARENTHESIS = '(',
-    TOKEN_CLOSE_PARENTHESIS = ')',
+    TOKEN_OPEN_PARENTHESES = '(',
+    TOKEN_CLOSE_PARENTHESES = ')',
     TOKEN_OPEN_BRACKETS = '[',
     TOKEN_CLOSE_BRACKETS= ']',
     TOKEN_OPEN_BRACES = '{',
     TOKEN_CLOSE_BRACES = '}',
     TOKEN_COMMA = ',',
+    TOKEN_SEMICOLON = ';',
     TOKEN_LESS_THAN = '<',
     TOKEN_LESS_THAN_OR_EQUAL = '<=',
     TOKEN_GREATER_THAN = '>',

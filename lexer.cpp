@@ -99,12 +99,12 @@ Token Lexer::getNextToken()
 
     // Parentheses
     if (curr == '(') {
-        token.type = TOKEN_OPEN_PARENTHESIS;
+        token.type = TOKEN_OPEN_PARENTHESES;
         token.value += curr;
         return token;
     }
     if (curr == ')') {
-        token.type = TOKEN_CLOSE_PARENTHESIS;
+        token.type = TOKEN_CLOSE_PARENTHESES;
         token.value += curr;
         return token;
     }
@@ -136,6 +136,13 @@ Token Lexer::getNextToken()
     // Comma
     if (curr == ',') {
         token.type = TOKEN_COMMA;
+        token.value += curr;
+        return token;
+    }
+
+    // Semicolon
+    if (curr == ';') {
+        token.type = TOKEN_SEMICOLON;
         token.value += curr;
         return token;
     }
