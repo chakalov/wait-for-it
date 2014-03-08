@@ -39,14 +39,14 @@ class CallExpression: public BaseExpression {
     std::string m_callee;
     std::vector<BaseExpression *> m_args;
 public:
-    CallExpression(const std::string &callee, std::vector<BaseExpression *> &args);
+    CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args);
 };
 
 class FunctionPrototype: public BaseExpression {
     std::string m_name;
-    std::vector<BaseExpression *> m_args;
+    std::vector<std::string> m_args;
 public:
-    FunctionPrototype(const std::string &name, std::vector<BaseExpression *> &args);
+    FunctionPrototype(const std::string &name, const std::vector<std::string> &args);
 };
 
 class FunctionDefinition: public BaseExpression {

@@ -14,7 +14,8 @@ SOURCES += main.cpp \
 
 OTHER_FILES += \
     CMakeLists.txt \
-    test1.txt
+    test1.txt \
+    test2.txt
 
 HEADERS += \
     lexer.h \
