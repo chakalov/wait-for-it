@@ -16,7 +16,7 @@ BaseExpression *Parser::_handleDeclarator(std::string declaration, std::string t
     case TOKEN_IDENTIFIER:
         return new VariableExpression(m_currentToken.value);
     default:
-        break;
+        return NULL;
     }
 }
 

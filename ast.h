@@ -17,6 +17,7 @@ class NumberExpression: public BaseExpression {
     double m_val;
 public:
     NumberExpression(double val);
+    double getValue();
 };
 
 // Expression class for referencing a variable

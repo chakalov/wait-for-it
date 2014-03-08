@@ -10,7 +10,8 @@ INCLUDEPATH += "/usr/include/llvm-c-3.5/"
 SOURCES += main.cpp \
     lexer.cpp \
     parser.cpp \
-    ast.cpp
+    ast.cpp \
+    table.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -21,5 +22,6 @@ HEADERS += \
     lexer.h \
     token.h \
     parser.h \
-    ast.h
+    ast.h \
+    table.h
 
