@@ -44,9 +44,9 @@ enum TokenType {
     TOKEN_COMMA = ',',
     TOKEN_SEMICOLON = ';',
     TOKEN_LESS_THAN = '<',
-    TOKEN_LESS_THAN_OR_EQUAL = '<=',
+    TOKEN_LESS_THAN_OR_EQUAL = '#',
     TOKEN_GREATER_THAN = '>',
-    TOKEN_GREATER_THAN_OR_EQUAL = '>=',
+    TOKEN_GREATER_THAN_OR_EQUAL = '$',
     TOKEN_PLUS = '+',
     TOKEN_MINUS = '-',
     TOKEN_ASTERISK = '*',
@@ -56,6 +56,7 @@ enum TokenType {
 struct Token {
     TokenType type;
     std::string value;
+    int line;
 };
 
 }

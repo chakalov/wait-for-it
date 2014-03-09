@@ -9,6 +9,7 @@ namespace wait_for_it {
 
 class Lexer
 {
+    int m_currentLineNumber;
     std::ifstream *m_sourceStream;
 public:
     Lexer(const char *);

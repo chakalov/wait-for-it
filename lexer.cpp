@@ -6,6 +6,7 @@ using namespace wait_for_it;
 
 Lexer::Lexer(const char *filename)
 {
+    m_currentLineNumber = 1;
     m_sourceStream = new std::ifstream(filename);
 }
 
@@ -25,6 +26,10 @@ Token Lexer::getNextToken()
     while(isspace(curr)) {
         curr = m_sourceStream->get();
 
+        if (curr != '\n' && curr != '\r') {
+            m_currentLineNumber++;
+        }
+
         // Comments
         if (curr == '/') {
             peek = m_sourceStream->peek();
@@ -32,13 +37,19 @@ Token Lexer::getNextToken()
                 while (curr != '\n' && curr != '\r' && curr != EOF) {
                     curr = m_sourceStream->get();
                 }
+                m_currentLineNumber++;
             } else if (peek == '*') {
                 while (curr != '*' && m_sourceStream->peek() != '/') {
                     curr = m_sourceStream->get();
+                    if (curr != '\n' && curr != '\r') {
+                        m_currentLineNumber++;
+                    }
                 }
             }
         }
     }
+
+    token.line = m_currentLineNumber;
 
     // check for EOF
     if (!m_sourceStream->good() || curr == EOF) {

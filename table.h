@@ -1,25 +1,27 @@
-#ifndef TABLE_H
-#define TABLE_H
+//#ifndef TABLE_H
+//#define TABLE_H
 
-#include "ast.h"
-#include <stack>
-#include <map>
-#include <string>
+//#include "ast.h"
+//#include <stack>
+//#include <map>
+//#include <string>
 
-namespace wait_for_it {
+//namespace wait_for_it {
 
-typedef std::stack<std::map<std::string, BaseExpression *>> table;
+//typedef std::stack< std::map<std::string, BaseExpression *> > table;
 
-class Table
-{
-    table symbolTable;
-public:
-    Table();
-    void push(std::string name, BaseExpression *expression);
-    table pop();
+//class Table
+//{
+//    table symbolTable;
+//public:
+//    Table();
+//    void push(std::string name, BaseExpression *expression);
+//    table pop();
+//    table beginScope();
+//    void endScope();
 
-};
+//};
 
-}
+//}
 
-#endif // TABLE_H
+//#endif // TABLE_H

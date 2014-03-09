@@ -3,8 +3,11 @@
 
 #include "lexer.h"
 #include "ast.h"
+#include "token.h"
 #include <cstdlib>
+#include <vector>
 #include <map>
+
 
 namespace wait_for_it {
 
@@ -12,12 +15,17 @@ class Parser
 {
     Lexer *m_lexer;
     Token m_currentToken;
-
+    BaseExpression *_handleTypeSpecifier(std::string type);
     Token _getNextToken();
-
-    BaseExpression *_handleDeclarator(std::string declaration, std::string type, int pointer = 0);
-    BaseExpression *_handleDeclarationSpecifier(std::string declaration);
-    BaseExpression *_handleTypeSpecifier(std::string declaration, std::string type);
+    BaseExpression *_handleVariableDeclaration(std::string type, std::string identifier);
+    BaseExpression *_handleFunctionDeclaration(std::string type, std::string identifier);
+    BaseExpression *_handleParameterDeclaratrion(std::string type);
+    BlockDefinition *_handleBlockDeclaration(const std::vector<BaseExpression *> &args);
+    BaseExpression *_handleIfStatement();
+    BaseExpression *_handleParenthesesExpression();
+    BaseExpression *_handlePrimaryExpression();
+    BaseExpression *_handleExpression();
+    BaseExpression *_handleBinaryOperationExpression(int ExprPrec, BaseExpression *LHS);
 public:
     Parser(Lexer *lexer);
     void parse();
