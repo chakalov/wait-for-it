@@ -24,11 +24,16 @@ Token Lexer::getNextToken()
 
     // remove delimiters and comments
     while(isspace(curr)) {
-        curr = m_sourceStream->get();
-
-        if (curr != '\n' && curr != '\r') {
+        if (curr == '\n') {
+            m_currentLineNumber++;
+            if (m_sourceStream->peek() == '\r') {
+                m_sourceStream->get();
+            }
+        } else if (curr == '\n') {
             m_currentLineNumber++;
         }
+
+        curr = m_sourceStream->get();
 
         // Comments
         if (curr == '/') {
@@ -41,9 +46,15 @@ Token Lexer::getNextToken()
             } else if (peek == '*') {
                 while (curr != '*' && m_sourceStream->peek() != '/') {
                     curr = m_sourceStream->get();
-                    if (curr != '\n' && curr != '\r') {
+                    if (curr == '\n') {
+                        m_currentLineNumber++;
+                        if (m_sourceStream->peek() == '\r') {
+                            m_sourceStream->get();
+                        }
+                    } else if (curr == '\n') {
                         m_currentLineNumber++;
                     }
+
                 }
             }
         }

@@ -63,6 +63,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
             _getNextToken();
             break;
         case TOKEN_OPEN_BRACES:
+            _getNextToken();
             return new FunctionDefinition(prototype, _handleBlockDeclaration(args));
             break;
         default:
@@ -155,7 +156,8 @@ BaseExpression *Parser::_handleExpression()
     if (!LHS) {
         printf("nqkva gre6ka");
     }
-    _handleBinaryOperationExpression(0, LHS);
+    _getNextToken();
+    return _handleBinaryOperationExpression(0, LHS);
 }
 
 BaseExpression *Parser::_handleBinaryOperationExpression(int ExprPrec, BaseExpression *LHS)
@@ -168,10 +170,17 @@ BaseExpression *Parser::_handleBinaryOperationExpression(int ExprPrec, BaseExpre
 //        }
 
         Token BinOp = m_currentToken;
+
+        if (BinOp.type == TOKEN_SEMICOLON) {
+            return LHS;
+        }
+
         _getNextToken();
+
 
         // Parse the primary expression after the binary operator.
         BaseExpression *RHS = _handlePrimaryExpression();
+        _getNextToken();
         if (!RHS) return LHS;
 
 //        // If BinOp binds less tightly with RHS than the operator after RHS, let

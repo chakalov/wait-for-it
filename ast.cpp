@@ -32,7 +32,11 @@ BinaryExpression::BinaryExpression(char op, BaseExpression *lhs, BaseExpression 
 
 void BinaryExpression::emitCode()
 {
-
+    printf("Expr[\n");
+    m_lhs->emitCode();
+    printf("(%c)\n", m_op);
+    m_rhs->emitCode();
+    printf("]\n");
 }
 
 CallExpression::CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args) : m_callee(callee), m_args(args)

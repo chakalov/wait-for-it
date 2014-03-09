@@ -1,10 +1,10 @@
 int a;
 int b;
 int c;
-a = 10;
-b = a + 10;
 
 int main(int s, int c)
 {
     int a;
+    a + b;
+    a + c;
 }
