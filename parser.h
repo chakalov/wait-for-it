@@ -21,7 +21,7 @@ class Parser
     BaseExpression *_handleVariableDeclaration(std::string type, std::string identifier);
     BaseExpression *_handleFunctionDeclaration(std::string type, std::string identifier);
     BaseExpression *_handleParameterDeclaratrion(std::string type);
-    BlockDefinition *_handleBlockDeclaration(const std::vector<BaseExpression *> &args);
+    BlockDefinition *_handleBlockDeclaration(const std::vector<BaseExpression *> &args, BlockDefinition::Scope scope);
     BaseExpression *_handleIfStatement();
     BaseExpression *_handleNumberExpression();
     BaseExpression *_handleIdentifierExpression();

@@ -21,7 +21,7 @@ int main ()
     LLVMContext &Context = getGlobalContext();
 
     TheModule = new Module("wait for it jit", Context);
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/test2.txt");
+    Lexer lexer("/home/spas/qtprojects/wait-for-it/test3.txt");
     //Token tok;
 
     //while ( (tok = lexer.getNextToken()).type != TOKEN_EOF )
@@ -30,7 +30,10 @@ int main ()
     Parser parser(&lexer);
 
     BlockDefinition *ast = parser.parse();
-    ast->emitCode();
+
+    ast->emitCode(Builder, *TheModule);
 
     TheModule->dump();
+
+    printf("FINISH HIM;\n");
 }

@@ -50,6 +50,7 @@ enum TokenType {
     TOKEN_PLUS = '+',
     TOKEN_MINUS = '-',
     TOKEN_ASTERISK = '*',
+    TOKEN_DIVIDE = '/',
     TOKEN_ELLIPSIS = '.'
 };
 
