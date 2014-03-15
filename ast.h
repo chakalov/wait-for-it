@@ -1,6 +1,11 @@
 #ifndef AST_H
 #define AST_H
 
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include <string>
 #include <vector>
 
@@ -10,7 +15,7 @@ namespace wait_for_it {
 class BaseExpression {
 public:
     virtual ~BaseExpression();
-    virtual void emitCode() = 0;
+    virtual llvm::Value *emitCode() = 0;
 };
 
 // Expression class for numeric literals
@@ -19,7 +24,7 @@ class NumberExpression: public BaseExpression {
 public:
     NumberExpression(double val);
     double getValue();
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 // TODO: REFACTOR -- add symbol table
@@ -29,7 +34,7 @@ class IdentifierExpression: public BaseExpression {
 public:
     IdentifierExpression(std::string name);
     std::string getValue();
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 // Expression class for referencing a variable
@@ -38,7 +43,7 @@ class VariableExpression: public BaseExpression {
     std::string m_name;
 public:
     VariableExpression(const std::string &type, const std::string &name);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 // Expression class for binary operator
@@ -47,7 +52,7 @@ class BinaryExpression: public BaseExpression {
     BaseExpression *m_lhs, *m_rhs;
 public:
     BinaryExpression(char op, BaseExpression *lhs, BaseExpression *rhs);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 // Expression class for function calls
@@ -56,7 +61,7 @@ class CallExpression: public BaseExpression {
     std::vector<BaseExpression *> m_args;
 public:
     CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 class FunctionPrototype: public BaseExpression {
@@ -64,7 +69,7 @@ class FunctionPrototype: public BaseExpression {
     std::vector<BaseExpression *> m_args;
 public:
     FunctionPrototype(const std::string &name, const std::vector<BaseExpression *> &args);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 class FunctionDefinition: public BaseExpression {
@@ -72,23 +77,23 @@ class FunctionDefinition: public BaseExpression {
     BaseExpression *m_body;
 public:
     FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 class BlockDefinition: public BaseExpression {
     std::vector<BaseExpression *> m_expressions;
 public:
     BlockDefinition(std::vector<BaseExpression *> &expressions);
-    virtual void emitCode();
+    virtual llvm::Value *emitCode();
 };
 
 class IfStatmentExpression: public BaseExpression {
     BaseExpression  *m_expression;
-    BlockDefinition *m_ifBlock;
-    BlockDefinition *m_elseBlock;
+    BaseExpression *m_ifBlock;
+    BaseExpression *m_elseBlock;
 public:
-    IfStatmentExpression(BaseExpression  &expression, BlockDefinition &ifBlock, BlockDefinition &elseBlock);
-    virtual void emitCode();
+    IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock);
+    virtual llvm::Value *emitCode();
 };
 
 }

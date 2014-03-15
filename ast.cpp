@@ -12,7 +12,7 @@ NumberExpression::NumberExpression(double val) : m_val(val)
 {
 }
 
-void NumberExpression::emitCode()
+llvm::Value *NumberExpression::emitCode()
 {
 
 }
@@ -21,7 +21,7 @@ VariableExpression::VariableExpression(const std::string &type, const std::strin
 {
 }
 
-void VariableExpression::emitCode()
+llvm::Value *VariableExpression::emitCode()
 {
     printf("Var[%s %s]\n", m_type.c_str(), m_name.c_str());
 }
@@ -30,20 +30,20 @@ BinaryExpression::BinaryExpression(char op, BaseExpression *lhs, BaseExpression 
 {
 }
 
-void BinaryExpression::emitCode()
+llvm::Value *BinaryExpression::emitCode()
 {
-    printf("Expr[\n");
+    printf("Expr[ ");
     m_lhs->emitCode();
-    printf("(%c)\n", m_op);
+    printf(" (%c) ", m_op);
     m_rhs->emitCode();
-    printf("]\n");
+    printf(" ]\n");
 }
 
 CallExpression::CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args) : m_callee(callee), m_args(args)
 {
 }
 
-void CallExpression::emitCode()
+llvm::Value *CallExpression::emitCode()
 {
 
 }
@@ -52,7 +52,7 @@ FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<
 {
 }
 
-void FunctionPrototype::emitCode()
+llvm::Value *FunctionPrototype::emitCode()
 {
     printf("Proto[%s (", m_name.c_str());
     for (std::vector<BaseExpression *>::iterator arg = m_args.begin() ; arg != m_args.end(); ++arg) {
@@ -65,7 +65,7 @@ FunctionDefinition::FunctionDefinition(FunctionPrototype *prototype, BaseExpress
 {
 }
 
-void FunctionDefinition::emitCode()
+llvm::Value *FunctionDefinition::emitCode()
 {
     printf("Func[");
     m_prototype->emitCode();
@@ -77,7 +77,7 @@ BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions) : m
 {
 }
 
-void BlockDefinition::emitCode()
+llvm::Value *BlockDefinition::emitCode()
 {
     printf("BeginBlock\n");
     for (std::vector<BaseExpression *>::iterator expression = m_expressions.begin(); expression != m_expressions.end(); ++expression) {
@@ -87,16 +87,20 @@ void BlockDefinition::emitCode()
 }
 
 
-//IfStatmentExpression::IfStatmentExpression(BaseExpression &expression, BlockDefinition &ifBlock, BlockDefinition &elseBlock) :
-//    m_expression(expression), m_ifBlock(ifBlock), m_elseBlock(elseBlock)
-//{
+IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock) :
+    m_expression(expression), m_ifBlock(ifBlock), m_elseBlock(elseBlock)
+{
 
-//}
+}
 
-//void IfStatmentExpression::emitCode()
-//{
-//    printf("IFF");
-//}
+llvm::Value *IfStatmentExpression::emitCode()
+{
+    printf("IFF (");
+    m_expression->emitCode();
+    printf("\t{{");
+    m_ifBlock->emitCode();
+    printf("}}\n");
+}
 
 
 IdentifierExpression::IdentifierExpression(std::string name) : m_name(name)
@@ -109,7 +113,7 @@ std::string IdentifierExpression::getValue()
     return m_name;
 }
 
-void IdentifierExpression::emitCode()
+llvm::Value *IdentifierExpression::emitCode()
 {
-    printf("Ident[%s] // Please REFACTOR ME\n", m_name.c_str());
+    printf("$Ident[%s]$", m_name.c_str());
 }

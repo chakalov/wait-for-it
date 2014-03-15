@@ -1,20 +1,36 @@
 #include <cstdio>
 
+#include "llvm/IR/Verifier.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
 #include "lexer.h"
 #include "parser.h"
 #include "token.h"
 
 using namespace wait_for_it;
+using namespace llvm;
+
+static Module *TheModule;
+static IRBuilder<> Builder(getGlobalContext());
+static std::map<std::string, Value*> NamedValues;
 
 int main ()
 {
-    Lexer lexer("/home/chakalov/qtprojects/llvm/test2.txt");
+    LLVMContext &Context = getGlobalContext();
+
+    TheModule = new Module("wait for it jit", Context);
+    Lexer lexer("/home/spas/qtprojects/wait-for-it/test2.txt");
     //Token tok;
 
     //while ( (tok = lexer.getNextToken()).type != TOKEN_EOF )
-      //  printf("%s\n", tok.value.c_str());
+    //  printf("%s\n", tok.value.c_str());
 
     Parser parser(&lexer);
 
-    parser.parse();
+    BlockDefinition *ast = parser.parse();
+    ast->emitCode();
+
+    TheModule->dump();
 }

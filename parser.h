@@ -14,6 +14,7 @@ namespace wait_for_it {
 class Parser
 {
     Lexer *m_lexer;
+    std::map<char, int> m_binopPrecedence;
     Token m_currentToken;
     BaseExpression *_handleTypeSpecifier(std::string type);
     Token _getNextToken();
@@ -22,13 +23,15 @@ class Parser
     BaseExpression *_handleParameterDeclaratrion(std::string type);
     BlockDefinition *_handleBlockDeclaration(const std::vector<BaseExpression *> &args);
     BaseExpression *_handleIfStatement();
+    BaseExpression *_handleNumberExpression();
+    BaseExpression *_handleIdentifierExpression();
     BaseExpression *_handleParenthesesExpression();
     BaseExpression *_handlePrimaryExpression();
     BaseExpression *_handleExpression();
     BaseExpression *_handleBinaryOperationExpression(int ExprPrec, BaseExpression *LHS);
 public:
     Parser(Lexer *lexer);
-    void parse();
+    BlockDefinition *parse();
 };
 
 }

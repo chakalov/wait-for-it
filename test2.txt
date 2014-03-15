@@ -5,6 +5,15 @@ int c;
 int main(int s, int c)
 {
     int a;
-    a + b;
+    if (a > b) {
+       (a + b);
+    }
+    (a + b);
+    (a + b) + a;
+    v + (a + b);
     a + c;
+    a*c+b;
+    a+b*c;
+    a+b*c*a+b+d*a*b*c+a;
+    (a + b) * (c + d) + (a / (b - c)) - d;
 }

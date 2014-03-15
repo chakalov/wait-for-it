@@ -93,9 +93,9 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
         case TOKEN_TYPE_SPECIFIER:
             expressions.push_back(_handleTypeSpecifier(m_currentToken.value));
             break;
-            //        case TOKEN_IF:
-            //            expressions.push_back(_handleIfStatement());
-            //            break;
+        case TOKEN_IF:
+            expressions.push_back(_handleIfStatement());
+            break;
             //        case TOKEN_STRUCT:
             //            break;
             //        case TOKEN_UNION:
@@ -105,7 +105,11 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
         case TOKEN_CLOSE_BRACES:
             return new BlockDefinition(expressions);
         default:
+            // TODO: push only valid expressions
             expressions.push_back(_handleExpression());
+            if (m_currentToken.type) {
+
+            }
             break;
         }
         _getNextToken();
@@ -114,12 +118,32 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
     return new BlockDefinition(expressions);
 }
 
+BaseExpression *Parser::_handleNumberExpression()
+{
+    BaseExpression *result = new NumberExpression(strtod(m_currentToken.value.c_str(), 0));
+    _getNextToken();
+    return result;
+}
+
+BaseExpression *Parser::_handleIdentifierExpression()
+{
+    BaseExpression *result = new IdentifierExpression(m_currentToken.value);
+    _getNextToken();
+    return result;
+}
+
 BaseExpression *Parser::_handleParenthesesExpression()
 {
     BaseExpression *expr;
     _getNextToken();
     expr = _handleExpression();
+
+    if (m_currentToken.type != TOKEN_CLOSE_PARENTHESES) {
+        printf("error\n");
+        return 0;
+    }
     _getNextToken();
+
     return expr;
 }
 
@@ -127,27 +151,44 @@ BaseExpression *Parser::_handlePrimaryExpression()
 {
     switch(m_currentToken.type) {
     case TOKEN_NUMBER:
-        return new NumberExpression(strtod(m_currentToken.value.c_str(), 0));
+        return _handleNumberExpression();
         break;
     case TOKEN_IDENTIFIER:
-        return new IdentifierExpression(m_currentToken.value);
+        return _handleIdentifierExpression();
         break;
     case TOKEN_OPEN_PARENTHESES:
         return _handleParenthesesExpression();
         break;
+    default:
+        return NULL;
     }
 }
 
-//BaseExpression *Parser::_handleIfStatement()
-//{
-//    _getNextToken();
-//    if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
-//        printf("'(' expected on line: %d", m_currentToken.line);
-//    }
-//    _handleSimpleExpression();
+BaseExpression *Parser::_handleIfStatement()
+{
+    BaseExpression *expr, *ifBlock, *elseBlock = NULL;
+    _getNextToken();
+    if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
+        printf("'(' expected on line: %d", m_currentToken.line);
+    }
+    _getNextToken();
+    expr = _handleExpression();
 
-//    return NULL; //TODO: make it return IfExpression
-//}
+    if(m_currentToken.type != TOKEN_CLOSE_PARENTHESES) {
+        printf("')' expected on line: %d", m_currentToken.line);
+    }
+
+    _getNextToken();
+
+    if(m_currentToken.type == TOKEN_OPEN_BRACES) {
+        _getNextToken();
+        ifBlock = _handleBlockDeclaration(*(new std::vector<BaseExpression *>()));
+    } else {
+        ifBlock = _handleExpression();
+    }
+
+    return new IfStatmentExpression(expr, ifBlock, elseBlock);
+}
 
 BaseExpression *Parser::_handleExpression()
 {
@@ -156,52 +197,56 @@ BaseExpression *Parser::_handleExpression()
     if (!LHS) {
         printf("nqkva gre6ka");
     }
-    _getNextToken();
     return _handleBinaryOperationExpression(0, LHS);
 }
 
 BaseExpression *Parser::_handleBinaryOperationExpression(int ExprPrec, BaseExpression *LHS)
 {
     while (1) {
-//        int TokPrec = GetTokPrecedence();
+        int TokPrec = m_binopPrecedence[(char) m_currentToken.type];
 
-//        if (TokPrec < ExprPrec) {
-//            return LHS;
-//        }
-
-        Token BinOp = m_currentToken;
-
-        if (BinOp.type == TOKEN_SEMICOLON) {
+        if (TokPrec < ExprPrec) {
             return LHS;
         }
 
-        _getNextToken();
+        Token BinOp = m_currentToken;
 
+        _getNextToken();
 
         // Parse the primary expression after the binary operator.
         BaseExpression *RHS = _handlePrimaryExpression();
-        _getNextToken();
-        if (!RHS) return LHS;
+        if (!RHS) {
+            return LHS;
+        }
 
-//        // If BinOp binds less tightly with RHS than the operator after RHS, let
-//        // the pending operator take RHS as its LHS.
-//        int NextPrec = GetTokPrecedence();
-//        if (TokPrec < NextPrec) {
-//            RHS = ParseBinOpRHS(TokPrec+1, RHS);
-//            if (RHS == 0) return 0;
-//        }
+        // If BinOp binds less tightly with RHS than the operator after RHS, let
+        // the pending operator take RHS as its LHS.
+        int NextPrec = m_binopPrecedence[(char) m_currentToken.type];
+        if (TokPrec < NextPrec) {
+            RHS = _handleBinaryOperationExpression(TokPrec+1, RHS);
+            if (RHS == 0) {
+                return 0;
+            }
+        }
 
         // Merge LHS/RHS.
         LHS = new BinaryExpression(BinOp.type, LHS, RHS);
     }
 }
 
-Parser::Parser(Lexer *lexer) : m_lexer(lexer)
+Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
 {
+    m_binopPrecedence[';'] = -1;
+    m_binopPrecedence[')'] = -1;
+    m_binopPrecedence['<'] = 10;
+    m_binopPrecedence['>'] = 10;
+    m_binopPrecedence['+'] = 20;
+    m_binopPrecedence['-'] = 20;
+    m_binopPrecedence['*'] = 40;
 }
 
-void Parser::parse()
+BlockDefinition *Parser::parse()
 {
     _getNextToken();
-    _handleBlockDeclaration(*(new std::vector<BaseExpression *>()))->emitCode();
+    return _handleBlockDeclaration(*(new std::vector<BaseExpression *>()));
 }
