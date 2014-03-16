@@ -6,6 +6,8 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
+#include "llvm/Support/raw_ostream.h"
+#include <llvm/ADT/StringSwitch.h>
 #include <string>
 #include <vector>
 
@@ -47,6 +49,12 @@ public:
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
+struct FunctionArgument {
+    std::string mType;
+    std::string mName;
+    FunctionArgument(std::string type, std::string name);
+};
+
 class GlobalVariableExpression: public VariableExpression {
 public:
     GlobalVariableExpression(const std::string &type, const std::string &name);
@@ -73,10 +81,11 @@ public:
 
 class FunctionPrototype: public BaseExpression {
     std::string m_name;
-    std::vector<BaseExpression *> m_args;
+    std::vector<FunctionArgument *> m_args;
+    std::string m_returnType;
 public:
-    FunctionPrototype(const std::string &name, const std::vector<BaseExpression *> &args);
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+    FunctionPrototype(const std::string &name, const std::vector<FunctionArgument *> &args, std::string returnType);
+    virtual llvm::Function *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
 class FunctionDefinition: public BaseExpression {

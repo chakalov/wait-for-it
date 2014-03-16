@@ -2,7 +2,7 @@
 
 using namespace wait_for_it;
 
-BaseExpression *Parser::_handleTypeSpecifier(std::string type)
+BaseExpression *Parser::_handleTypeSpecifier(std::string type, BlockDefinition::Scope scope)
 {
     _getNextToken();
 
@@ -14,29 +14,41 @@ BaseExpression *Parser::_handleTypeSpecifier(std::string type)
     std::string identifier = m_currentToken.value;
 
     _getNextToken();
-
-    switch(m_currentToken.type) {
-    case TOKEN_SEMICOLON:
-        return _handleVariableDeclaration(type, identifier);
-    case TOKEN_OPEN_PARENTHESES:
-        return _handleFunctionDeclaration(type, identifier);
-    default:
-        return NULL;
+    if(scope == BlockDefinition::Global) {
+        switch(m_currentToken.type) {
+        case TOKEN_SEMICOLON:
+            return _handleGlobalVariableDeclaration(type, identifier);
+        case TOKEN_OPEN_PARENTHESES:
+            return _handleFunctionDeclaration(type, identifier);
+        default:
+            return NULL;
+        }
+    } else {
+        switch(m_currentToken.type) {
+        case TOKEN_SEMICOLON:
+            return _handleVariableDeclaration(type, identifier);
+        default:
+            return NULL;
+        }
     }
 }
 
 Token Parser::_getNextToken()
 {
     return m_currentToken = m_lexer->getNextToken();
-//    m_currentToken = m_lexer->getNextToken();
-//    printf("--debug: {{%d:[%c]:%s}}\n", m_currentToken.line, m_currentToken.type, m_currentToken.value.c_str());
-//    return m_currentToken;
+    //    m_currentToken = m_lexer->getNextToken();
+    //    printf("--debug: {{%d:[%c]:%s}}\n", m_currentToken.line, m_currentToken.type, m_currentToken.value.c_str());
+    //    return m_currentToken;
 }
 
 BaseExpression *Parser::_handleVariableDeclaration(std::string type, std::string identifier)
 {
-    return new GlobalVariableExpression(type, identifier);
     return new VariableExpression(type, identifier);
+}
+
+BaseExpression *Parser::_handleGlobalVariableDeclaration(std::string type, std::string identifier)
+{
+      return new GlobalVariableExpression(type, identifier);
 }
 
 BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string identifier)
@@ -45,7 +57,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
 
     FunctionPrototype *prototype;
     BlockDefinition *body;
-    std::vector<BaseExpression *> args;
+    std::vector<FunctionArgument *> args;
 
     while (1) {
         switch(m_currentToken.type) {
@@ -57,7 +69,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
             break;
         case TOKEN_CLOSE_PARENTHESES:
             _getNextToken();
-            prototype = new FunctionPrototype(identifier, args);
+            prototype = new FunctionPrototype(identifier, args, type);
             break;
         case TOKEN_TYPE_SPECIFIER:
             args.push_back(_handleParameterDeclaratrion(m_currentToken.value));
@@ -65,7 +77,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
             break;
         case TOKEN_OPEN_BRACES:
             _getNextToken();
-            return new FunctionDefinition(prototype, _handleBlockDeclaration(args, BlockDefinition::Function));
+            return new FunctionDefinition(prototype, _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), BlockDefinition::Function));
             break;
         default:
             return NULL;
@@ -75,7 +87,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
     return new FunctionDefinition(prototype, body);
 }
 
-BaseExpression *Parser::_handleParameterDeclaratrion(std::string type)
+FunctionArgument *Parser::_handleParameterDeclaratrion(std::string type)
 {
     _getNextToken();
 
@@ -83,7 +95,7 @@ BaseExpression *Parser::_handleParameterDeclaratrion(std::string type)
         return NULL;
     }
 
-    return new VariableExpression(type, m_currentToken.value);
+    return new FunctionArgument(type, m_currentToken.value);
 }
 
 BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpression *> &args, BlockDefinition::Scope scope)
@@ -92,7 +104,7 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
     while (m_currentToken.type != TOKEN_EOF) {
         switch (m_currentToken.type) {
         case TOKEN_TYPE_SPECIFIER:
-            expressions.push_back(_handleTypeSpecifier(m_currentToken.value));
+            expressions.push_back(_handleTypeSpecifier(m_currentToken.value, scope));
             break;
         case TOKEN_IF:
             expressions.push_back(_handleIfStatement());

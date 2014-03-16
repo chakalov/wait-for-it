@@ -1,1 +1,13 @@
 double wait_for_me;
+
+void test(int x, char y)
+{
+    int a;
+    int b;
+}
+
+void test2()
+{
+    void c;
+    double d;
+}

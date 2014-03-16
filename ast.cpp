@@ -1,10 +1,19 @@
 #include "ast.h"
-#include "llvm/Support/raw_ostream.h"
-#include <llvm/ADT/StringSwitch.h>
 
 #include <cstdio>
 
 using namespace wait_for_it;
+
+llvm::Type *getLLVMTypeTTT(llvm::IRBuilder<> &builder, std::string type)
+{
+    return llvm::StringSwitch<llvm::Type *>(llvm::StringRef(type))
+            .Case("void", builder.getVoidTy())
+            .Case("char", builder.getInt8Ty())
+            .Case("bool", builder.getInt1Ty())
+            .Cases("short", "int", builder.getInt32Ty())
+            .Cases("long", "double", builder.getDoubleTy())
+            .Cases("signed", "unsigned", builder.getInt32Ty());
+}
 
 BaseExpression::~BaseExpression()
 {
@@ -16,7 +25,7 @@ NumberExpression::NumberExpression(double val) : m_val(val)
 
 llvm::Value *NumberExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    return llvm::ConstantFP::get(llvm::getGlobalContext(), llvm::APFloat(m_val));
+    return llvm::ConstantFP::get(module.getContext(), llvm::APFloat(m_val));
 }
 
 VariableExpression::VariableExpression(const std::string &type, const std::string &name) : m_type(type), m_name(name)
@@ -25,12 +34,7 @@ VariableExpression::VariableExpression(const std::string &type, const std::strin
 
 llvm::Value *VariableExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    llvm::Type *type = llvm::StringSwitch<llvm::Type *>(llvm::StringRef(m_type))
-            .Case("char", llvm::Type::getInt8Ty(llvm::getGlobalContext()))
-            .Case("bool", llvm::Type::getInt1Ty(llvm::getGlobalContext()))
-            .Cases("short", "int", llvm::Type::getInt32Ty(llvm::getGlobalContext()))
-            .Cases("long", "double", llvm::Type::getDoubleTy(llvm::getGlobalContext()))
-            .Cases("signed", "unsigned", llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+    llvm::Type *type = getLLVMTypeTTT(builder, m_type);
 
     return builder.CreateAlloca(type, 0, m_name.c_str());
 }
@@ -56,7 +60,7 @@ llvm::Value *BinaryExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module
         return builder.CreateFMul(L, R, "multmp");
     case '<':
         L = builder.CreateFCmpULT(L, R, "cmptmp");
-        return builder.CreateUIToFP(L, llvm::Type::getDoubleTy(llvm::getGlobalContext()), "booltmp");
+        return builder.CreateUIToFP(L, llvm::Type::getDoubleTy(module.getContext()), "booltmp");
     default:
         return NULL; //ErrorV("invalid binary operator");
     }
@@ -71,29 +75,57 @@ llvm::Value *CallExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &
 
 }
 
-FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<BaseExpression *> &args) : m_name(name), m_args(args)
+FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<FunctionArgument *> &args, std::string returnType)
+    : m_name(name), m_args(args), m_returnType(returnType)
 {
 }
 
-llvm::Value *FunctionPrototype::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
+llvm::Function *FunctionPrototype::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    printf("Proto[%s (", m_name.c_str());
-    for (std::vector<BaseExpression *>::iterator arg = m_args.begin() ; arg != m_args.end(); ++arg) {
-        (*arg)->emitCode(builder, module);
+    llvm::Type* returnType = getLLVMTypeTTT(builder, m_returnType);
+
+    llvm::FunctionType *functionType = 0;
+
+    if (m_args.size() > 0) {
+        std::vector<llvm::Type*> args;
+
+        for(std::vector<FunctionArgument *>::iterator it = m_args.begin(); it != m_args.end(); it++) {
+            args.push_back(getLLVMTypeTTT(builder, (*it)->mType));
+        }
+
+        functionType = llvm::FunctionType::get(returnType, args, false);
+    } else {
+        functionType = llvm::FunctionType::get(returnType, false);
     }
-    printf(")]\n");
+
+    llvm::Function *functionPrototype = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage, m_name, &module);
+
+    if(m_args.size())
+    {
+        unsigned i = 0;
+        for (llvm::Function::arg_iterator AI = functionPrototype->arg_begin(); i != m_args.size(); ++AI, ++i)
+        {
+            AI->setName(m_args[i]->mName);
+        }
+    }
+
+    return functionPrototype;
 }
 
 FunctionDefinition::FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body) : m_prototype(prototype), m_body(body)
 {
+
 }
 
 llvm::Value *FunctionDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    printf("Func[");
-    m_prototype->emitCode(builder, module);
+    llvm::Function *functionPrototype = m_prototype->emitCode(builder, module);
+
+    llvm::BasicBlock *block = llvm::BasicBlock::Create(module.getContext(), "entrypoint", functionPrototype);
+    builder.SetInsertPoint(block);
     m_body->emitCode(builder, module);
-    printf("]\n");
+
+    return functionPrototype;
 }
 
 BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions, Scope scope) : m_expressions(expressions), m_scope(scope)
@@ -102,15 +134,11 @@ BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions, Sco
 
 llvm::Value *BlockDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    llvm::FunctionType *funcType = llvm::FunctionType::get(builder.getVoidTy(), false);
-    llvm::Function *mainFunc = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, "main", &module);
-    llvm::BasicBlock *entry = llvm::BasicBlock::Create(llvm::getGlobalContext(), "entrypoint", mainFunc);
-    builder.SetInsertPoint(entry);
+    llvm::Value *val = NULL;
     for (std::vector<BaseExpression *>::iterator expression = m_expressions.begin(); expression != m_expressions.end(); ++expression) {
-        (*expression)->emitCode(builder, module);
+        val = (*expression)->emitCode(builder, module);
     }
-
-    return entry;
+    return val;
 }
 
 
@@ -145,19 +173,19 @@ llvm::Value *IdentifierExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
     printf("$Ident[%s]$", m_name.c_str());
 }
 
-
 GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableExpression(type, name)
 {
 }
 
 llvm::Value *GlobalVariableExpression::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
 {
-    llvm::Type *type = llvm::StringSwitch<llvm::Type *>(llvm::StringRef(m_type))
-            .Case("char", llvm::Type::getInt8Ty(llvm::getGlobalContext()))
-            .Case("bool", llvm::Type::getInt1Ty(llvm::getGlobalContext()))
-            .Cases("short", "int", llvm::Type::getInt32Ty(llvm::getGlobalContext()))
-            .Cases("long", "double", llvm::Type::getDoubleTy(llvm::getGlobalContext()))
-            .Cases("signed", "unsigned", llvm::Type::getInt32Ty(llvm::getGlobalContext()));
+    llvm::Type *type = getLLVMTypeTTT(builder, m_type);
 
     return new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::CommonLinkage, 0, m_name.c_str());
+}
+
+
+FunctionArgument::FunctionArgument(std::string type, std::string name)
+    : mType(type), mName(name)
+{
 }
