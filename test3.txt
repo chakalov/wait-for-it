@@ -4,7 +4,7 @@ void test(int x, char y)
 {
     //int a = 1;
     int b;
-    //printf(1);
+    //printf("%d", 1);
 }
 
 void test2()

@@ -174,6 +174,7 @@ BaseExpression *Parser::_handleCallFunctionExpression(std::string identifier)
             return NULL;
         }
     }
+    _getNextToken();
     return new CallExpression(identifier, args);
 }
 
@@ -182,6 +183,7 @@ BaseExpression *Parser::_handleIdentifierExpression()
     std::string identifier = m_currentToken.value;
     _getNextToken();
     if (m_currentToken.type == TOKEN_OPEN_PARENTHESES) {
+        _getNextToken();
         return _handleCallFunctionExpression(identifier);
     } else {
         return new IdentifierExpression(identifier);
