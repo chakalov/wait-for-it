@@ -21,7 +21,7 @@ int main ()
     LLVMContext &Context = getGlobalContext();
 
     TheModule = new Module("wait for it jit", Context);
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/test3.txt");
+    Lexer lexer("/home/chakalov/qtprojects/llvm/test3.txt");
     //Token tok;
 
     //while ( (tok = lexer.getNextToken()).type != TOKEN_EOF )

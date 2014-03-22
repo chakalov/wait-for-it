@@ -15,32 +15,37 @@ llvm::Type *getLLVMTypeTTT(llvm::IRBuilder<> &builder, std::string type)
             .Cases("signed", "unsigned", builder.getInt32Ty());
 }
 
-BaseExpression::~BaseExpression()
-{
-}
+// destructors
+BaseExpression::~BaseExpression() {}
 
-NumberExpression::NumberExpression(double val) : m_val(val)
-{
-}
+// constructors
+NumberExpression::NumberExpression(double val) : m_val(val) {}
+VariableDeclarationExpression::VariableDeclarationExpression(const std::string &type, const std::string &name) : m_type(type), m_name(name) {}
+BinaryExpression::BinaryExpression(char op, BaseExpression *lhs, BaseExpression *rhs) : m_op(op), m_lhs(lhs), m_rhs(rhs) {}
+CallExpression::CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args) : m_callee(callee), m_args(args) {}
+FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<FunctionArgument *> &args, std::string returnType) : m_name(name), m_args(args), m_returnType(returnType) {}
+FunctionDefinition::FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body) : m_prototype(prototype), m_body(body) {}
+BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions) : m_expressions(expressions) {}
+IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock) : m_expression(expression), m_ifBlock(ifBlock), m_elseBlock(elseBlock) {}
+IdentifierExpression::IdentifierExpression(std::string name) : m_name(name) {}
+GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableDeclarationExpression(type, name) {}
+FunctionArgument::FunctionArgument(std::string type, std::string name) : mType(type), mName(name) {}
 
 llvm::Value *NumberExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     return llvm::ConstantFP::get(module.getContext(), llvm::APFloat(m_val));
 }
 
-VariableExpression::VariableExpression(const std::string &type, const std::string &name) : m_type(type), m_name(name)
-{
-}
-
-llvm::Value *VariableExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
+llvm::Value *VariableDeclarationExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     llvm::Type *type = getLLVMTypeTTT(builder, m_type);
 
-    return builder.CreateAlloca(type, 0, m_name.c_str());
+    return m_value = builder.CreateAlloca(type, 0, m_name.c_str());
 }
 
-BinaryExpression::BinaryExpression(char op, BaseExpression *lhs, BaseExpression *rhs) : m_op(op), m_lhs(lhs), m_rhs(rhs)
+llvm::Value *VariableDeclarationExpression::getValue()
 {
+    return m_value;
 }
 
 llvm::Value *BinaryExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
@@ -66,18 +71,9 @@ llvm::Value *BinaryExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module
     }
 }
 
-CallExpression::CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args) : m_callee(callee), m_args(args)
-{
-}
-
 llvm::Value *CallExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
 
-}
-
-FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<FunctionArgument *> &args, std::string returnType)
-    : m_name(name), m_args(args), m_returnType(returnType)
-{
 }
 
 llvm::Function *FunctionPrototype::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
@@ -112,11 +108,6 @@ llvm::Function *FunctionPrototype::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
     return functionPrototype;
 }
 
-FunctionDefinition::FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body) : m_prototype(prototype), m_body(body)
-{
-
-}
-
 llvm::Value *FunctionDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     llvm::Function *functionPrototype = m_prototype->emitCode(builder, module);
@@ -128,10 +119,6 @@ llvm::Value *FunctionDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Modu
     return functionPrototype;
 }
 
-BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions, Scope scope) : m_expressions(expressions), m_scope(scope)
-{
-}
-
 llvm::Value *BlockDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     llvm::Value *val = NULL;
@@ -141,13 +128,6 @@ llvm::Value *BlockDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module 
     return val;
 }
 
-
-IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock) :
-    m_expression(expression), m_ifBlock(ifBlock), m_elseBlock(elseBlock)
-{
-
-}
-
 llvm::Value *IfStatmentExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     printf("IFF (");
@@ -155,12 +135,6 @@ llvm::Value *IfStatmentExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
     printf("\t{{");
     m_ifBlock->emitCode(builder, module);
     printf("}}\n");
-}
-
-
-IdentifierExpression::IdentifierExpression(std::string name) : m_name(name)
-{
-
 }
 
 std::string IdentifierExpression::getValue()
@@ -173,19 +147,9 @@ llvm::Value *IdentifierExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
     printf("$Ident[%s]$", m_name.c_str());
 }
 
-GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableExpression(type, name)
-{
-}
-
 llvm::Value *GlobalVariableExpression::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
 {
     llvm::Type *type = getLLVMTypeTTT(builder, m_type);
 
-    return new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::CommonLinkage, 0, m_name.c_str());
-}
-
-
-FunctionArgument::FunctionArgument(std::string type, std::string name)
-    : mType(type), mName(name)
-{
+    return m_value = new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::WeakAnyLinkage, 0, m_name.c_str());
 }

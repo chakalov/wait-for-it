@@ -11,7 +11,7 @@ SOURCES += main.cpp \
     lexer.cpp \
     parser.cpp \
     ast.cpp \
-    table.cpp
+    scope.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -24,5 +24,5 @@ HEADERS += \
     token.h \
     parser.h \
     ast.h \
-    table.h
+    scope.h
 

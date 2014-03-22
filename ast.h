@@ -40,13 +40,15 @@ public:
 };
 
 // Expression class for referencing a variable
-class VariableExpression: public BaseExpression {
+class VariableDeclarationExpression: public BaseExpression {
 protected:
     std::string m_type;
     std::string m_name;
+    llvm::Value *m_value;
 public:
-    VariableExpression(const std::string &type, const std::string &name);
+    VariableDeclarationExpression(const std::string &type, const std::string &name);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+    llvm::Value *getValue();
 };
 
 struct FunctionArgument {
@@ -55,7 +57,7 @@ struct FunctionArgument {
     FunctionArgument(std::string type, std::string name);
 };
 
-class GlobalVariableExpression: public VariableExpression {
+class GlobalVariableExpression: public VariableDeclarationExpression {
 public:
     GlobalVariableExpression(const std::string &type, const std::string &name);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
@@ -97,15 +99,9 @@ public:
 };
 
 class BlockDefinition: public BaseExpression {
-public:
-    enum Scope {
-        Global, Function, Inner
-    };
-private:
-    Scope m_scope;
     std::vector<BaseExpression *> m_expressions;
 public:
-    BlockDefinition(std::vector<BaseExpression *> &expressions, Scope scope);
+    BlockDefinition(std::vector<BaseExpression *> &expressions);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 

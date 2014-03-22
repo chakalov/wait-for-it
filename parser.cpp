@@ -1,8 +1,9 @@
 #include "parser.h"
+#include "scope.h"
 
 using namespace wait_for_it;
 
-BaseExpression *Parser::_handleTypeSpecifier(std::string type, BlockDefinition::Scope scope)
+BaseExpression *Parser::_handleTypeSpecifier(std::string type, Scope *scope)
 {
     _getNextToken();
 
@@ -14,7 +15,7 @@ BaseExpression *Parser::_handleTypeSpecifier(std::string type, BlockDefinition::
     std::string identifier = m_currentToken.value;
 
     _getNextToken();
-    if(scope == BlockDefinition::Global) {
+    if(scope->getLevel() == 0) {
         switch(m_currentToken.type) {
         case TOKEN_SEMICOLON:
             return _handleGlobalVariableDeclaration(type, identifier);
@@ -43,12 +44,16 @@ Token Parser::_getNextToken()
 
 BaseExpression *Parser::_handleVariableDeclaration(std::string type, std::string identifier)
 {
-    return new VariableExpression(type, identifier);
+    VariableDeclarationExpression *declaration = new VariableDeclarationExpression(type, identifier);
+    scopes.back()->addVariable(identifier, declaration);
+    return declaration;
 }
 
 BaseExpression *Parser::_handleGlobalVariableDeclaration(std::string type, std::string identifier)
 {
-      return new GlobalVariableExpression(type, identifier);
+    GlobalVariableExpression *declaration = new GlobalVariableExpression(type, identifier);
+    scopes.back()->addVariable(identifier, declaration);
+    return declaration;
 }
 
 BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string identifier)
@@ -57,6 +62,7 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
 
     FunctionPrototype *prototype;
     BlockDefinition *body;
+    FunctionDefinition *definition;
     std::vector<FunctionArgument *> args;
 
     while (1) {
@@ -77,7 +83,10 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
             break;
         case TOKEN_OPEN_BRACES:
             _getNextToken();
-            return new FunctionDefinition(prototype, _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), BlockDefinition::Function));
+            scopes.push_back(new Scope(scopes.back()->getLevel() + 1));
+            definition = new FunctionDefinition(prototype, _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back()));
+            scopes.pop_back();
+            return definition;
             break;
         default:
             return NULL;
@@ -98,7 +107,7 @@ FunctionArgument *Parser::_handleParameterDeclaratrion(std::string type)
     return new FunctionArgument(type, m_currentToken.value);
 }
 
-BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpression *> &args, BlockDefinition::Scope scope)
+BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpression *> &args, Scope *scope)
 {
     std::vector<BaseExpression *> expressions;
     while (m_currentToken.type != TOKEN_EOF) {
@@ -116,7 +125,7 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
             //        case TOKEN_ENUM:
             //            break;
         case TOKEN_CLOSE_BRACES:
-            return new BlockDefinition(expressions, scope);
+            return new BlockDefinition(expressions);
         default:
             // TODO: push only valid expressions
             expressions.push_back(_handleExpression());
@@ -128,7 +137,7 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
         _getNextToken();
     }
 
-    return new BlockDefinition(expressions, scope);
+    return new BlockDefinition(expressions);
 }
 
 BaseExpression *Parser::_handleNumberExpression()
@@ -138,11 +147,45 @@ BaseExpression *Parser::_handleNumberExpression()
     return result;
 }
 
+BaseExpression *Parser::_handleCallFunctionExpression(std::string identifier)
+{
+    bool endArgs = false;
+    std::vector<BaseExpression *> args;
+    while (!endArgs) {
+        switch(m_currentToken.type) {
+        case TOKEN_COMMA:
+            _getNextToken();
+            if (m_currentToken.type == TOKEN_COMMA) {
+                // printf("Error on line %d: unexpected token ','", m_currentToken.line);
+            }
+            break;
+        case TOKEN_CLOSE_PARENTHESES:
+            endArgs = true;
+            _getNextToken();
+            break;
+        case TOKEN_NUMBER:
+            args.push_back(new NumberExpression(strtod(m_currentToken.value.c_str(), 0)));
+            _getNextToken();
+            break;
+            //        case TOKEN_STRING:
+            //        case TOKEN_CHAR:
+            //        case TOKEN_IDENTIFIER:
+        default:
+            return NULL;
+        }
+    }
+    return new CallExpression(identifier, args);
+}
+
 BaseExpression *Parser::_handleIdentifierExpression()
 {
-    BaseExpression *result = new IdentifierExpression(m_currentToken.value);
+    std::string identifier = m_currentToken.value;
     _getNextToken();
-    return result;
+    if (m_currentToken.type == TOKEN_OPEN_PARENTHESES) {
+        return _handleCallFunctionExpression(identifier);
+    } else {
+        return new IdentifierExpression(identifier);
+    }
 }
 
 BaseExpression *Parser::_handleParenthesesExpression()
@@ -163,6 +206,8 @@ BaseExpression *Parser::_handleParenthesesExpression()
 BaseExpression *Parser::_handlePrimaryExpression()
 {
     switch(m_currentToken.type) {
+    //    case TOKEN_RETURN:
+
     case TOKEN_NUMBER:
         return _handleNumberExpression();
         break;
@@ -195,7 +240,9 @@ BaseExpression *Parser::_handleIfStatement()
 
     if(m_currentToken.type == TOKEN_OPEN_BRACES) {
         _getNextToken();
-        ifBlock = _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), BlockDefinition::Inner);
+        scopes.push_back(new Scope(scopes.back()->getLevel() + 1));
+        ifBlock = _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back());
+        scopes.pop_back();
     } else {
         ifBlock = _handleExpression();
     }
@@ -261,5 +308,7 @@ Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
 BlockDefinition *Parser::parse()
 {
     _getNextToken();
-    return _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), BlockDefinition::Global);
+    scopes.push_back(new Scope());
+    return _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back());
+    scopes.pop_back();
 }

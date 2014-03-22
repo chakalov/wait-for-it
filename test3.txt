@@ -2,8 +2,9 @@ double wait_for_me;
 
 void test(int x, char y)
 {
-    int a;
+    //int a = 1;
     int b;
+    //printf(1);
 }
 
 void test2()
