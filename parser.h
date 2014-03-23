@@ -16,7 +16,7 @@ namespace wait_for_it {
 class Parser
 {
     std::vector<Scope *> scopes;
-    std::stack<Scope *> scopes_;
+    std::map<std::string, llvm::Value *> functions;
     Lexer *m_lexer;
     std::map<char, int> m_binopPrecedence;
     Token m_currentToken;
@@ -37,7 +37,7 @@ class Parser
     BaseExpression *_handleBinaryOperationExpression(int ExprPrec, BaseExpression *LHS);
 public:
     Parser(Lexer *lexer);
-    BlockDefinition *parse();
+    BlockDefinition *parse(llvm::Function *printf, llvm::Function *scanf);
 };
 
 }

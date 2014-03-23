@@ -30,6 +30,32 @@ IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpre
 IdentifierExpression::IdentifierExpression(std::string name) : m_name(name) {}
 GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableDeclarationExpression(type, name) {}
 FunctionArgument::FunctionArgument(std::string type, std::string name) : mType(type), mName(name) {}
+PredefinedFunction::PredefinedFunction(llvm::Function *predefined) : FunctionDefinition(NULL, NULL), m_predefined(predefined) {}
+StringExpression::StringExpression(std::string val) : m_val(val) {}
+
+std::string StringExpression::getValue()
+{
+    return m_val;
+}
+
+llvm::Value *StringExpression::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
+{
+    llvm::Constant *format_const = llvm::ConstantDataArray::getString(builder.getContext(), m_val.c_str());
+    llvm::GlobalVariable *var = new llvm::GlobalVariable(module, llvm::ArrayType::get(builder.getInt8Ty(), (int) m_val.length()), true, llvm::GlobalValue::WeakAnyLinkage, format_const, ".str");
+    llvm::Constant *zero = llvm::Constant::getNullValue(builder.getInt32Ty());
+
+    std::vector<llvm::Constant*> indices;
+    indices.push_back(zero);
+    indices.push_back(zero);
+    llvm::Constant *var_ref = llvm::ConstantExpr::getGetElementPtr(var, indices);
+
+    return var_ref;
+}
+
+llvm::Value *PredefinedFunction::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
+{
+    return m_predefined;
+}
 
 llvm::Value *NumberExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
@@ -73,7 +99,17 @@ llvm::Value *BinaryExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module
 
 llvm::Value *CallExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
+    llvm::Function *proto = module.getFunction(this->m_callee);
+    std::vector<llvm::Value*> ArgsV;
 
+    for(std::vector<BaseExpression *>::iterator it = m_args.begin(); it != m_args.end(); it++) {
+        ArgsV.push_back((*it)->emitCode(builder, module));
+    }
+
+    llvm::CallInst *call = builder.CreateCall(proto, ArgsV, "calltmp");
+    call->setTailCall(false);
+
+    return call;
 }
 
 llvm::Function *FunctionPrototype::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
@@ -130,11 +166,56 @@ llvm::Value *BlockDefinition::emitCode(llvm::IRBuilder<>& builder, llvm::Module 
 
 llvm::Value *IfStatmentExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    printf("IFF (");
-    m_expression->emitCode(builder, module);
-    printf("\t{{");
-    m_ifBlock->emitCode(builder, module);
-    printf("}}\n");
+    llvm::Value *ElseV = NULL;
+    llvm::Value *CondV = m_expression->emitCode(builder, module);
+    if (CondV == 0) {
+        return 0;
+    }
+
+    CondV = builder.CreateFCmpONE(CondV, llvm::ConstantFP::get(builder.getContext(), llvm::APFloat(0.0)), "ifcond");
+
+    // get the function where the if expression is in
+    llvm::Function *parent = builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *ThenBB = llvm::BasicBlock::Create(builder.getContext(), "then", parent);
+    llvm::BasicBlock *ElseBB = llvm::BasicBlock::Create(builder.getContext(), "else");
+    llvm::BasicBlock *MergeBB = llvm::BasicBlock::Create(builder.getContext(), "ifcont");
+
+    builder.CreateCondBr(CondV, ThenBB, ElseBB);
+
+    builder.SetInsertPoint(ThenBB);
+    llvm::Value *ThenV = m_ifBlock->emitCode(builder, module);
+    if (ThenV == 0) {
+        return 0;
+    }
+
+    builder.CreateBr(MergeBB);
+
+    ThenBB = builder.GetInsertBlock();
+
+    parent->getBasicBlockList().push_back(ElseBB);
+    builder.SetInsertPoint(ElseBB);
+
+    if (m_elseBlock) {
+        ElseV = m_elseBlock->emitCode(builder, module);
+        if (ElseV == 0) {
+            return 0;
+        }
+    }
+
+    builder.CreateBr(MergeBB);
+    // Codegen of 'Else' can change the current block, update ElseBB for the PHI.
+    ElseBB = builder.GetInsertBlock();
+
+    // Emit merge block.
+    parent->getBasicBlockList().push_back(MergeBB);
+    builder.SetInsertPoint(MergeBB);
+    llvm::PHINode *PN = builder.CreatePHI(builder.getDoubleTy(), 2, "iftmp");
+
+    PN->addIncoming(ThenV, ThenBB);
+    if (m_elseBlock) {
+        PN->addIncoming(ElseV, ElseBB);
+    }
+    return PN;
 }
 
 std::string IdentifierExpression::getValue()
@@ -153,3 +234,4 @@ llvm::Value *GlobalVariableExpression::emitCode(llvm::IRBuilder<> &builder, llvm
 
     return m_value = new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::WeakAnyLinkage, 0, m_name.c_str());
 }
+

@@ -1,0 +1,4 @@
+void main(int maina)
+{
+    printf("Test: [%s, %s]\n", "test", "tes2");
+}

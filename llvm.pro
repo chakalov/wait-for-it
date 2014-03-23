@@ -17,7 +17,8 @@ OTHER_FILES += \
     CMakeLists.txt \
     test1.txt \
     test2.txt \
-    test3.txt
+    test3.txt \
+    main.txt
 
 HEADERS += \
     lexer.h \

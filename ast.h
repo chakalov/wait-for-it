@@ -29,6 +29,15 @@ public:
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
+// Expression class for numeric literals
+class StringExpression: public BaseExpression {
+    std::string m_val;
+public:
+    StringExpression(std::string val);
+    std::string getValue();
+    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+};
+
 // TODO: REFACTOR -- add symbol table
 // Expression class for identifiers
 class IdentifierExpression: public BaseExpression {
@@ -96,6 +105,14 @@ class FunctionDefinition: public BaseExpression {
 public:
     FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+};
+
+class PredefinedFunction: public FunctionDefinition {
+    llvm::Function *m_predefined;
+public:
+    PredefinedFunction(llvm::Function *predefined);
+    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+
 };
 
 class BlockDefinition: public BaseExpression {

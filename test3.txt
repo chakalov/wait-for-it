@@ -4,11 +4,24 @@ void test(int x, char y)
 {
     //int a = 1;
     int b;
-    //printf("%d", 1);
+    printf("Test %d", 1);
+    printf("%d %d", 1, 2);
+
+    if (1) {
+        printf("Hello Dear!");
+    }
+
+    printf("Aftermath!");
 }
 
 void test2()
 {
     void c;
     double d;
+    test(1+1, 1+2*3*4+5+6*7*8*9+10);
+}
+
+void main()
+{
+    test(1, 2);
 }

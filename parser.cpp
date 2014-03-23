@@ -163,18 +163,17 @@ BaseExpression *Parser::_handleCallFunctionExpression(std::string identifier)
             endArgs = true;
             _getNextToken();
             break;
-        case TOKEN_NUMBER:
-            args.push_back(new NumberExpression(strtod(m_currentToken.value.c_str(), 0)));
+        case TOKEN_STRING:
+            args.push_back(new StringExpression(m_currentToken.value));
             _getNextToken();
             break;
-            //        case TOKEN_STRING:
             //        case TOKEN_CHAR:
             //        case TOKEN_IDENTIFIER:
         default:
-            return NULL;
+            args.push_back(_handleExpression());
+            break;
         }
     }
-    _getNextToken();
     return new CallExpression(identifier, args);
 }
 
@@ -298,6 +297,7 @@ BaseExpression *Parser::_handleBinaryOperationExpression(int ExprPrec, BaseExpre
 
 Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
 {
+    m_binopPrecedence[','] = -1;
     m_binopPrecedence[';'] = -1;
     m_binopPrecedence[')'] = -1;
     m_binopPrecedence['<'] = 10;
@@ -307,10 +307,12 @@ Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
     m_binopPrecedence['*'] = 40;
 }
 
-BlockDefinition *Parser::parse()
+BlockDefinition *Parser::parse(llvm::Function *printf, llvm::Function *scanf)
 {
     _getNextToken();
     scopes.push_back(new Scope());
+    functions["printf"] = printf;
+    functions["scanf"] = scanf;
     return _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back());
     scopes.pop_back();
 }
