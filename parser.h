@@ -28,6 +28,7 @@ class Parser
     FunctionArgument *_handleParameterDeclaratrion(std::string type);
     BlockDefinition *_handleBlockDeclaration(const std::vector<BaseExpression *> &args, Scope *scope);
     BaseExpression *_handleIfStatement();
+    BaseExpression *_handleWhileLoop();
     BaseExpression *_handleNumberExpression();
     BaseExpression *_handleCallFunctionExpression(std::string identifier);
     BaseExpression *_handleIdentifierExpression();

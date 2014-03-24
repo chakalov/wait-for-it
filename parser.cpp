@@ -118,6 +118,9 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
         case TOKEN_IF:
             expressions.push_back(_handleIfStatement());
             break;
+        case TOKEN_WHILE:
+            expressions.push_back(_handleWhileLoop());
+            break;
             //        case TOKEN_STRUCT:
             //            break;
             //        case TOKEN_UNION:
@@ -249,6 +252,39 @@ BaseExpression *Parser::_handleIfStatement()
     }
 
     return new IfStatmentExpression(expr, ifBlock, elseBlock);
+}
+
+BaseExpression *Parser::_handleWhileLoop()
+{
+    BaseExpression *expr, *whileBlock;
+
+    _getNextToken();
+    if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
+        printf("'(' expected on line: %d", m_currentToken.line);
+    }
+
+    _getNextToken();
+    expr = _handleExpression();
+
+    if(m_currentToken.type != TOKEN_CLOSE_PARENTHESES) {
+        printf("')' expected on line: %d", m_currentToken.line);
+    }
+
+    _getNextToken();
+
+    if(m_currentToken.type == TOKEN_OPEN_BRACES) {
+        _getNextToken();
+        scopes.push_back(new Scope(scopes.back()->getLevel() + 1));
+        whileBlock = _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back());
+        scopes.pop_back();
+    } else {
+        whileBlock = _handleExpression();
+    }
+
+    printf("While!");
+    return NULL;
+    //ToDo: Do it
+    //return new WhileLoop(expr, whileBlock);
 }
 
 BaseExpression *Parser::_handleExpression()

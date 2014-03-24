@@ -54,7 +54,7 @@ int main ()
     llvm::Function *printf_func = printf_prototype(Context, module);
     llvm::Function *scanf_func = scanf_prototype(Context, module);
 
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/main.txt");
+    Lexer lexer("/home/spas/qtprojects/wait-for-it/test11.txt");
 
     Parser parser(&lexer);
 
