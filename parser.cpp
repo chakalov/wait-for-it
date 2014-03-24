@@ -3,6 +3,19 @@
 
 using namespace wait_for_it;
 
+VariableDeclarationExpression *Parser::findVariable(std::string name)
+{
+    VariableDeclarationExpression *ret = NULL;
+    for(std::vector<Scope *>::iterator it = scopes.begin(); it != scopes.end(); it++) {
+        ret = (*it)->getVariable(name);
+        if (ret != NULL) {
+            return ret;
+        }
+    }
+    // error
+    return NULL;
+}
+
 BaseExpression *Parser::_handleTypeSpecifier(std::string type, Scope *scope)
 {
     _getNextToken();
@@ -84,6 +97,11 @@ BaseExpression *Parser::_handleFunctionDeclaration(std::string type, std::string
         case TOKEN_OPEN_BRACES:
             _getNextToken();
             scopes.push_back(new Scope(scopes.back()->getLevel() + 1));
+            if (args.size()) {
+                for(std::vector<FunctionArgument *>::iterator it = args.begin(); it != args.end(); it++) {
+                    scopes.back()->addVariable((*it)->getName(), (*it));
+                }
+            }
             definition = new FunctionDefinition(prototype, _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back()));
             scopes.pop_back();
             return definition;
@@ -145,7 +163,12 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<BaseExpressio
 
 BaseExpression *Parser::_handleNumberExpression()
 {
-    BaseExpression *result = new NumberExpression(strtod(m_currentToken.value.c_str(), 0));
+    BaseExpression *result = NULL;
+    if (m_currentToken.type == TOKEN_DOUBLE_NUMBER) {
+        result = new DoubleNumberExpression(strtod(m_currentToken.value.c_str(), 0));
+    } else if (m_currentToken.type == TOKEN_INTEGER_NUMBER) {
+        result = new IntegerNumberExpression(strtol(m_currentToken.value.c_str(), 0, 10));
+    }
     _getNextToken();
     return result;
 }
@@ -188,7 +211,8 @@ BaseExpression *Parser::_handleIdentifierExpression()
         _getNextToken();
         return _handleCallFunctionExpression(identifier);
     } else {
-        return new IdentifierExpression(identifier);
+        VariableDeclarationExpression *var = findVariable(identifier);
+        return new IdentifierExpression(var);
     }
 }
 
@@ -212,7 +236,8 @@ BaseExpression *Parser::_handlePrimaryExpression()
     switch(m_currentToken.type) {
     //    case TOKEN_RETURN:
 
-    case TOKEN_NUMBER:
+    case TOKEN_INTEGER_NUMBER:
+    case TOKEN_DOUBLE_NUMBER:
         return _handleNumberExpression();
         break;
     case TOKEN_IDENTIFIER:
@@ -343,12 +368,10 @@ Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
     m_binopPrecedence['*'] = 40;
 }
 
-BlockDefinition *Parser::parse(llvm::Function *printf, llvm::Function *scanf)
+BlockDefinition *Parser::parse()
 {
     _getNextToken();
     scopes.push_back(new Scope());
-    functions["printf"] = printf;
-    functions["scanf"] = scanf;
     return _handleBlockDeclaration(*(new std::vector<BaseExpression *>()), scopes.back());
     scopes.pop_back();
 }

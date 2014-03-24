@@ -21,11 +21,19 @@ public:
 };
 
 // Expression class for numeric literals
-class NumberExpression: public BaseExpression {
+class DoubleNumberExpression: public BaseExpression {
     double m_val;
 public:
-    NumberExpression(double val);
+    DoubleNumberExpression(double val);
     double getValue();
+    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+};
+
+class IntegerNumberExpression: public BaseExpression {
+    long m_val;
+public:
+    IntegerNumberExpression(long val);
+    long getValue();
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
@@ -34,16 +42,6 @@ class StringExpression: public BaseExpression {
     std::string m_val;
 public:
     StringExpression(std::string val);
-    std::string getValue();
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
-// TODO: REFACTOR -- add symbol table
-// Expression class for identifiers
-class IdentifierExpression: public BaseExpression {
-    std::string m_name;
-public:
-    IdentifierExpression(std::string name);
     std::string getValue();
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
@@ -60,10 +58,20 @@ public:
     llvm::Value *getValue();
 };
 
-struct FunctionArgument {
-    std::string mType;
-    std::string mName;
+// Expression class for identifiers
+class IdentifierExpression: public BaseExpression {
+    VariableDeclarationExpression *m_var;
+public:
+    IdentifierExpression(VariableDeclarationExpression * var);
+    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+};
+
+class FunctionArgument: public VariableDeclarationExpression {
+public:
     FunctionArgument(std::string type, std::string name);
+    std::string getType();
+    std::string getName();
+    void setValue(llvm::Value *val);
 };
 
 class GlobalVariableExpression: public VariableDeclarationExpression {

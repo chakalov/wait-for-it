@@ -11,7 +11,8 @@ enum TokenType {
     TOKEN_IDENTIFIER = 'I',
 
     // literals
-    TOKEN_NUMBER = 'N',
+    TOKEN_DOUBLE_NUMBER = 'N',
+    TOKEN_INTEGER_NUMBER = 'n',
     TOKEN_STRING = 'S',
     TOKEN_CHAR = 'C',
 

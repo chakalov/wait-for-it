@@ -106,15 +106,23 @@ Token Lexer::getNextToken()
 
     // Numbers
     if(isdigit(curr)) {
-        token.type = TOKEN_NUMBER;
+        token.type = TOKEN_INTEGER_NUMBER;
 
         token.value += curr;
         peek = m_sourceStream->peek();
-        while(isdigit(peek) || peek == '.') {
+        while(isdigit(peek)) {
             token.value += m_sourceStream->get();
             peek = m_sourceStream->peek();
         };
-
+        if (peek == '.') {
+            token.type = TOKEN_DOUBLE_NUMBER;
+            token.value += m_sourceStream->get();
+            peek = m_sourceStream->peek();
+        }
+        while(isdigit(peek)) {
+            token.value += m_sourceStream->get();
+            peek = m_sourceStream->peek();
+        };
 
         return token;
     }
@@ -173,9 +181,18 @@ Token Lexer::getNextToken()
     if (curr == '"') {
         token.type = TOKEN_STRING;
         do {
-            token.value += m_sourceStream->get();
-            curr = m_sourceStream->peek();
-        } while(curr != '"');
+            curr = m_sourceStream->get();
+            peek = m_sourceStream->peek();
+
+            if (curr != '\\') {
+                token.value += curr;
+            } else if (peek == 'n') {
+                token.value += '\n';
+
+                curr = m_sourceStream->get();
+                peek = m_sourceStream->peek();
+            }
+        } while(peek != '"' || curr == '\\');
         m_sourceStream->get();
 
         return token;

@@ -1,4 +1,6 @@
 void main(int maina)
 {
-    printf("Test: [%s, %s]\n", "test", "tes2");
+    int mainaa;
+    printf("Test: \"[%s, %s]\"\n", "test", "tes2");
+    printf("Test nums: %f %d", 200.0, maina);
 }

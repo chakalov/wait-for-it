@@ -33,17 +33,17 @@ static llvm::Function* printf_prototype(llvm::LLVMContext& context, llvm::Module
     return func;
 }
 
-static llvm::Function* scanf_prototype(llvm::LLVMContext& context, llvm::Module *module)
-{
-    std::vector<llvm::Type*> scanf_arg_types;
-    scanf_arg_types.push_back(llvm::Type::getInt8PtrTy(context));
+//static llvm::Function* scanf_prototype(llvm::LLVMContext& context, llvm::Module *module)
+//{
+//    std::vector<llvm::Type*> scanf_arg_types;
+//    scanf_arg_types.push_back(llvm::Type::getInt8PtrTy(context));
 
-    llvm::FunctionType* scanf_type = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), scanf_arg_types, true);
-    llvm::Function *func = llvm::Function::Create(scanf_type, llvm::Function::ExternalLinkage, llvm::Twine("scanf"), module);
-    func->setCallingConv(llvm::CallingConv::C);
+//    llvm::FunctionType* scanf_type = llvm::FunctionType::get(llvm::Type::getInt32Ty(context), scanf_arg_types, true);
+//    llvm::Function *func = llvm::Function::Create(scanf_type, llvm::Function::ExternalLinkage, llvm::Twine("scanf"), module);
+//    func->setCallingConv(llvm::CallingConv::C);
 
-    return func;
-}
+//    return func;
+//}
 
 int main ()
 {
@@ -52,13 +52,13 @@ int main ()
     module = new Module("wait for it jit", Context);
 
     llvm::Function *printf_func = printf_prototype(Context, module);
-    llvm::Function *scanf_func = scanf_prototype(Context, module);
+    //llvm::Function *scanf_func = scanf_prototype(Context, module);
 
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/test11.txt");
+    Lexer lexer("/home/chakalov/qtprojects/llvm/main.txt");
 
     Parser parser(&lexer);
 
-    BlockDefinition *ast = parser.parse(printf_func, scanf_func);
+    BlockDefinition *ast = parser.parse();
 
     ast->emitCode(builder, *module);
 
@@ -83,7 +83,7 @@ int main ()
 
             std::vector<llvm::GenericValue> args;
             llvm::GenericValue val;
-            val.IntVal = llvm::APInt(32, 6);
+            val.IntVal = llvm::APInt(32, 313);
             args.push_back(val);
             engine->runFunction(mainFunction, args);
 
