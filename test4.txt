@@ -1,0 +1,13 @@
+void test(int x)
+{
+    printf("Some test");
+
+    if (x = 1) {
+        printf("Hello Dear!");
+    }
+}
+
+void main()
+{
+    test(1);
+}

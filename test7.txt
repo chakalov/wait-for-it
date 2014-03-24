@@ -1,0 +1,14 @@
+int empty() {
+    printf("Empthy function called");
+
+    return 0;
+}
+
+void main() {
+    int a;
+    a = empty();
+
+    if ( a != 0 ) {
+        printf("You should not see this");
+    }
+}

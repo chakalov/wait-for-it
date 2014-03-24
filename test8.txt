@@ -1,0 +1,17 @@
+int aplusplus(int a) {
+    int result;
+    result = a+1;
+
+    return result;
+}
+
+void main() {
+    int res;
+    res = aplusplus(5);
+
+    if ( res==6 ) {
+        printf("Result is: %d", res);
+    } else {
+        printf("Result is not 6 OMG!");
+    }
+}

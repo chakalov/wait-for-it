@@ -1,0 +1,19 @@
+void pritnName(int name) {
+    if ( name == 1) {
+        printf("Peter");
+    }
+
+    if ( name==2 ) {
+        printf("Spas");
+    }
+
+    if ( name != 1 && name != 2 ) {
+        printf("Why didn\t you eneter 1 or 2 now no name will be printed :(");
+    }
+}
+
+void main() {
+    printName(1);
+    printName(2);
+    printName(3);
+}

@@ -18,7 +18,14 @@ OTHER_FILES += \
     test1.txt \
     test2.txt \
     test3.txt \
-    main.txt
+    main.txt \
+    test4.txt \
+    test5.txt \
+    test6.txt \
+    test7.txt \
+    test8.txt \
+    test9.txt \
+    test10.txt
 
 HEADERS += \
     lexer.h \
