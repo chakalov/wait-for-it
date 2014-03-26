@@ -306,10 +306,7 @@ BaseExpression *Parser::_handleWhileLoop()
         whileBlock = _handleExpression();
     }
 
-    printf("While!");
-    return NULL;
-    //ToDo: Do it
-    //return new WhileLoop(expr, whileBlock);
+    return new WhileLoop(expr, whileBlock);
 }
 
 BaseExpression *Parser::_handleExpression()

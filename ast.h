@@ -139,6 +139,13 @@ public:
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
+class WhileLoop: public BaseExpression {
+    BaseExpression  *m_expression;
+    BaseExpression *m_block;
+public:
+    WhileLoop(BaseExpression *expression, BaseExpression *Block);
+    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+};
 }
 
 #endif // AST_H

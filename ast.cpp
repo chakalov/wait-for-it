@@ -30,6 +30,7 @@ IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpre
 IdentifierExpression::IdentifierExpression(VariableDeclarationExpression *var) : m_var(var) {}
 GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableDeclarationExpression(type, name) {}
 FunctionArgument::FunctionArgument(std::string type, std::string name) : VariableDeclarationExpression(type, name) {}
+WhileLoop::WhileLoop(BaseExpression *expression, BaseExpression *Block) : m_expression(expression), m_block(Block) {}
 
 std::string FunctionArgument::getType()
 {
@@ -239,6 +240,12 @@ llvm::Value *IfStatmentExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
     return PN;
 }
 
+llvm::Value *WhileLoop::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
+{
+  //ToDo: Emit code
+    printf("Emiting while :D");
+}
+
 llvm::Value *IdentifierExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
     return m_var->getValue();
@@ -250,3 +257,5 @@ llvm::Value *GlobalVariableExpression::emitCode(llvm::IRBuilder<> &builder, llvm
 
     return m_value = new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::WeakAnyLinkage, 0, m_name.c_str());
 }
+
+
