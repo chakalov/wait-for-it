@@ -11,7 +11,16 @@ SOURCES += main.cpp \
     lexer.cpp \
     parser.cpp \
     ast.cpp \
-    scope.cpp
+    scope.cpp \
+    ast/doublenumberexpr.cpp \
+    ast/int32numberexpr.cpp \
+    ast/stringexpr.cpp \
+    ast/localvariableexpr.cpp \
+    ast/expr.cpp \
+    ast/globalvariableexpr.cpp \
+    ast/variableexpr.cpp \
+    ast/identifierexpr.cpp \
+    ast/functionargumentexpr.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -33,5 +42,16 @@ HEADERS += \
     token.h \
     parser.h \
     ast.h \
-    scope.h
+    scope.h \
+    ast/expr.h \
+    ast/numberexpr.h \
+    ast/literalexpr.h \
+    ast/doublenumberexpr.h \
+    ast/int32numberexpr.h \
+    ast/stringexpr.h \
+    ast/variableexpr.h \
+    ast/localvariableexpr.h \
+    ast/globalvariableexpr.h \
+    ast/identifierexpr.h \
+    ast/functionargumentexpr.h
 
