@@ -361,6 +361,7 @@ Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
     m_binopPrecedence[','] = -1;
     m_binopPrecedence[';'] = -1;
     m_binopPrecedence[')'] = -1;
+    m_binopPrecedence['='] = 2;
     m_binopPrecedence['<'] = 10;
     m_binopPrecedence['>'] = 10;
     m_binopPrecedence['+'] = 20;

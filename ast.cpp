@@ -27,7 +27,14 @@ FunctionPrototype::FunctionPrototype(const std::string &name, const std::vector<
 FunctionDefinition::FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body) : m_prototype(prototype), m_body(body) {}
 BlockDefinition::BlockDefinition(std::vector<BaseExpression *> &expressions) : m_expressions(expressions) {}
 IfStatmentExpression::IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock) : m_expression(expression), m_ifBlock(ifBlock), m_elseBlock(elseBlock) {}
-IdentifierExpression::IdentifierExpression(VariableDeclarationExpression *var) : m_var(var) {}
+IdentifierExpression::IdentifierExpression(VariableDeclarationExpression *var) : m_var(var) {
+    FunctionArgument *arg = dynamic_cast<FunctionArgument *> (m_var);
+    if (arg) {
+        hasAlloca = false;
+    } else {
+        hasAlloca = true;
+    }
+}
 GlobalVariableExpression::GlobalVariableExpression(const std::string &type, const std::string &name) : VariableDeclarationExpression(type, name) {}
 FunctionArgument::FunctionArgument(std::string type, std::string name) : VariableDeclarationExpression(type, name) {}
 
@@ -94,17 +101,34 @@ llvm::Value *VariableDeclarationExpression::getValue()
     return m_value;
 }
 
+std::string VariableDeclarationExpression::getName()
+{
+    return m_name;
+}
+
 llvm::Value *BinaryExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
 {
-    llvm::Value *L = m_lhs->emitCode(builder, module);
-    llvm::Value *R = m_rhs->emitCode(builder, module);
+    llvm::Value *L, *R;
+    if (m_op == '=') {
+        IdentifierExpression *identifier = dynamic_cast<IdentifierExpression *>(m_lhs);
+        L = identifier->getValue();
+        R = m_rhs->emitCode(builder, module);
+        if (L == 0 || R == 0) {
+            return 0;
+        }
+
+        return builder.CreateStore(R, L);
+    }
+
+    L = m_lhs->emitCode(builder, module);
+    R = m_rhs->emitCode(builder, module);
     if (L == 0 || R == 0) {
         return 0;
     }
 
     switch (m_op) {
     case '+':
-        return builder.CreateFAdd(L, R, "addtmp");
+        return builder.CreateAdd(L, R, "addtmp");
     case '-':
         return builder.CreateFSub(L, R, "subtmp");
     case '*':
@@ -240,6 +264,15 @@ llvm::Value *IfStatmentExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Mo
 }
 
 llvm::Value *IdentifierExpression::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
+{
+    if (hasAlloca) {
+        return builder.CreateLoad(m_var->getValue(), m_var->getName());
+    } else {
+        return m_var->getValue();
+    }
+}
+
+llvm::Value *IdentifierExpression::getValue()
 {
     return m_var->getValue();
 }

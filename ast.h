@@ -56,14 +56,17 @@ public:
     VariableDeclarationExpression(const std::string &type, const std::string &name);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
     llvm::Value *getValue();
+    std::string getName();
 };
 
 // Expression class for identifiers
 class IdentifierExpression: public BaseExpression {
+    bool hasAlloca;
     VariableDeclarationExpression *m_var;
 public:
     IdentifierExpression(VariableDeclarationExpression * var);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
+    llvm::Value *getValue();
 };
 
 class FunctionArgument: public VariableDeclarationExpression {

@@ -212,6 +212,15 @@ Token Lexer::getNextToken()
     token.value += curr;
 
     // arithmetics
+    if (curr == '=') {
+        if (m_sourceStream->peek() == '=') {
+            token.value += m_sourceStream->get();
+        } else {
+            token.type = TOKEN_EQUALS;
+        }
+        return token;
+    }
+
     if (curr == '*') {
         if (m_sourceStream->peek() == '=') {
             token.value += m_sourceStream->get();
