@@ -10,11 +10,11 @@ namespace wait_for_it {
 class Scope
 {
     int m_level;
-    std::map<std::string, VariableDeclarationExpression *> m_variables;
+    std::map<std::string, VariableExpr *> m_variables;
 public:
     Scope(int level = 0);
-    void addVariable(const std::string &name, VariableDeclarationExpression *value);
-    VariableDeclarationExpression *getVariable(const std::string &name);
+    void addVariable(const std::string &name, VariableExpr *value);
+    VariableExpr *getVariable(const std::string &name);
 
     int getLevel();
 };

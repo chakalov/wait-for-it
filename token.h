@@ -44,6 +44,7 @@ enum TokenType {
     TOKEN_CLOSE_BRACES = '}',
     TOKEN_COMMA = ',',
     TOKEN_SEMICOLON = ';',
+    TOKEN_EQUALS = '=',
     TOKEN_LESS_THAN = '<',
     TOKEN_LESS_THAN_OR_EQUAL = '#',
     TOKEN_GREATER_THAN = '>',

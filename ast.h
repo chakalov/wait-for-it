@@ -1,6 +1,15 @@
 #ifndef AST_H
 #define AST_H
 
+#include "ast/expr.h"
+#include "ast/doublenumberexpr.h"
+#include "ast/int32numberexpr.h"
+#include "ast/stringexpr.h"
+#include "ast/localvariableexpr.h"
+#include "ast/globalvariableexpr.h"
+#include "ast/identifierexpr.h"
+#include "ast/functionargumentexpr.h"
+
 #include "llvm/IR/Verifier.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
@@ -13,105 +22,39 @@
 
 namespace wait_for_it {
 
-// Base class for all expressions
-class BaseExpression {
-public:
-    virtual ~BaseExpression();
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module) = 0;
-};
-
-// Expression class for numeric literals
-class DoubleNumberExpression: public BaseExpression {
-    double m_val;
-public:
-    DoubleNumberExpression(double val);
-    double getValue();
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
-class IntegerNumberExpression: public BaseExpression {
-    long m_val;
-public:
-    IntegerNumberExpression(long val);
-    long getValue();
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
-// Expression class for numeric literals
-class StringExpression: public BaseExpression {
-    std::string m_val;
-public:
-    StringExpression(std::string val);
-    std::string getValue();
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
-// Expression class for referencing a variable
-class VariableDeclarationExpression: public BaseExpression {
-protected:
-    std::string m_type;
-    std::string m_name;
-    llvm::Value *m_value;
-public:
-    VariableDeclarationExpression(const std::string &type, const std::string &name);
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-    llvm::Value *getValue();
-};
-
-// Expression class for identifiers
-class IdentifierExpression: public BaseExpression {
-    VariableDeclarationExpression *m_var;
-public:
-    IdentifierExpression(VariableDeclarationExpression * var);
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
-class FunctionArgument: public VariableDeclarationExpression {
-public:
-    FunctionArgument(std::string type, std::string name);
-    std::string getType();
-    std::string getName();
-    void setValue(llvm::Value *val);
-};
-
-class GlobalVariableExpression: public VariableDeclarationExpression {
-public:
-    GlobalVariableExpression(const std::string &type, const std::string &name);
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-
 // Expression class for binary operator
-class BinaryExpression: public BaseExpression {
+class BinaryExpression: public Expr {
     char m_op;
-    BaseExpression *m_lhs, *m_rhs;
+    Expr *m_lhs, *m_rhs;
 public:
-    BinaryExpression(char op, BaseExpression *lhs, BaseExpression *rhs);
+    BinaryExpression(char op, Expr *lhs, Expr *rhs);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module );
 };
 
 // Expression class for function calls
-class CallExpression: public BaseExpression {
+class CallExpression: public Expr {
     std::string m_callee;
-    std::vector<BaseExpression *> m_args;
+    std::vector<Expr *> m_args;
 public:
-    CallExpression(const std::string &callee, const std::vector<BaseExpression *> &args);
+    CallExpression(const std::string &callee, const std::vector<Expr *> &args);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
-class FunctionPrototype: public BaseExpression {
+class FunctionPrototype: public Expr {
     std::string m_name;
-    std::vector<FunctionArgument *> m_args;
+    std::vector<FunctionArgumentExpr *> m_args;
     std::string m_returnType;
 public:
-    FunctionPrototype(const std::string &name, const std::vector<FunctionArgument *> &args, std::string returnType);
+    FunctionPrototype(const std::string &name, const std::vector<FunctionArgumentExpr *> &args, std::string returnType);
+    void allocateArguments(llvm::IRBuilder<> &builder, llvm::Module &module);
     virtual llvm::Function *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
-class FunctionDefinition: public BaseExpression {
+class FunctionDefinition: public Expr {
     FunctionPrototype *m_prototype;
-    BaseExpression *m_body;
+    Expr *m_body;
 public:
-    FunctionDefinition(FunctionPrototype *prototype, BaseExpression *body);
+    FunctionDefinition(FunctionPrototype *prototype, Expr *body);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
@@ -123,19 +66,19 @@ public:
 
 };
 
-class BlockDefinition: public BaseExpression {
-    std::vector<BaseExpression *> m_expressions;
+class BlockDefinition: public Expr {
+    std::vector<Expr *> m_expressions;
 public:
-    BlockDefinition(std::vector<BaseExpression *> &expressions);
+    BlockDefinition(std::vector<Expr *> &expressions);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
-class IfStatmentExpression: public BaseExpression {
-    BaseExpression  *m_expression;
-    BaseExpression *m_ifBlock;
-    BaseExpression *m_elseBlock;
+class IfStatmentExpression: public Expr {
+    Expr  *m_expression;
+    Expr *m_ifBlock;
+    Expr *m_elseBlock;
 public:
-    IfStatmentExpression(BaseExpression *expression, BaseExpression *ifBlock, BaseExpression *elseBlock);
+    IfStatmentExpression(Expr *expression, Expr *ifBlock, Expr *elseBlock);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
 };
 
