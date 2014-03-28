@@ -12,5 +12,5 @@ llvm::Value *GlobalVariableExpr::emitCode(llvm::IRBuilder<> &builder, llvm::Modu
 {
     llvm::Type *type = getLLVMType(builder, m_type);
 
-    return m_value = new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::WeakAnyLinkage, 0, m_name.c_str());
+    return m_value = new llvm::GlobalVariable(module, type, false, llvm::GlobalValue::CommonLinkage, llvm::ConstantInt::get(module.getContext(), llvm::APInt(32, 0)), m_name.c_str());
 }

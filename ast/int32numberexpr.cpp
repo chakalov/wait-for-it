@@ -12,3 +12,9 @@ long Int32NumberExpr::getValue()
 {
     return m_val;
 }
+
+
+llvm::Value *Int32NumberExpr::emitCode(llvm::IRBuilder<> &builder, llvm::Module &module)
+{
+    return llvm::ConstantInt::get(module.getContext(), llvm::APInt(32, m_val));
+}

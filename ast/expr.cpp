@@ -2,6 +2,11 @@
 
 using namespace wait_for_it;
 
+Expr::~Expr()
+{
+
+}
+
 llvm::Type *Expr::getLLVMType(llvm::IRBuilder<> &builder, std::string type)
 {
     return llvm::StringSwitch<llvm::Type *>(llvm::StringRef(type))

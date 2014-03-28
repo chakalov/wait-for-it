@@ -58,7 +58,7 @@ int main ()
 
     Parser parser(&lexer);
 
-    BlockDefinition *ast = parser.parse();
+    BlockExpr *ast = parser.parse();
 
     ast->emitCode(builder, *module);
 

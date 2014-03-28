@@ -26,7 +26,7 @@ class Parser
     Expr *_handleGlobalVariableDeclaration(std::string type, std::string identifier);
     Expr *_handleFunctionDeclaration(std::string type, std::string identifier);
     FunctionArgumentExpr *_handleParameterDeclaratrion(std::string type);
-    BlockDefinition *_handleBlockDeclaration(const std::vector<Expr *> &args, Scope *scope);
+    BlockExpr *_handleBlockDeclaration(const std::vector<Expr *> &args, Scope *scope);
     Expr *_handleIfStatement();
     Expr *_handleWhileLoop();
     Expr *_handleNumberExpression();
@@ -38,7 +38,7 @@ class Parser
     Expr *_handleBinaryOperationExpression(int ExprPrec, Expr *LHS);
 public:
     Parser(Lexer *lexer);
-    BlockDefinition *parse();
+    BlockExpr *parse();
 };
 
 }

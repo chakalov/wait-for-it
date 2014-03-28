@@ -10,7 +10,6 @@ INCLUDEPATH += "/usr/include/llvm-c-3.5/"
 SOURCES += main.cpp \
     lexer.cpp \
     parser.cpp \
-    ast.cpp \
     scope.cpp \
     ast/doublenumberexpr.cpp \
     ast/int32numberexpr.cpp \
@@ -20,7 +19,13 @@ SOURCES += main.cpp \
     ast/globalvariableexpr.cpp \
     ast/variableexpr.cpp \
     ast/identifierexpr.cpp \
-    ast/functionargumentexpr.cpp
+    ast/functionargumentexpr.cpp \
+    ast/binaryexpr.cpp \
+    ast/callexpr.cpp \
+    ast/functionprototypeexpr.cpp \
+    ast/blockexpr.cpp \
+    ast/functionexpr.cpp \
+    ast/ifexpr.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -53,5 +58,11 @@ HEADERS += \
     ast/localvariableexpr.h \
     ast/globalvariableexpr.h \
     ast/identifierexpr.h \
-    ast/functionargumentexpr.h
+    ast/functionargumentexpr.h \
+    ast/binaryexpr.h \
+    ast/callexpr.h \
+    ast/functionprototypeexpr.h \
+    ast/blockexpr.h \
+    ast/functionexpr.h \
+    ast/ifexpr.h
 

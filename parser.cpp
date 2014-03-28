@@ -73,9 +73,9 @@ Expr *Parser::_handleFunctionDeclaration(std::string type, std::string identifie
 {
     _getNextToken();
 
-    FunctionPrototype *prototype;
-    BlockDefinition *body;
-    FunctionDefinition *definition;
+    FunctionPrototypeExpr *prototype;
+    BlockExpr *body;
+    FunctionExpr *definition;
     std::vector<FunctionArgumentExpr *> args;
 
     while (1) {
@@ -88,7 +88,7 @@ Expr *Parser::_handleFunctionDeclaration(std::string type, std::string identifie
             break;
         case TOKEN_CLOSE_PARENTHESES:
             _getNextToken();
-            prototype = new FunctionPrototype(identifier, args, type);
+            prototype = new FunctionPrototypeExpr(identifier, args, type);
             break;
         case TOKEN_TYPE_SPECIFIER:
             args.push_back(_handleParameterDeclaratrion(m_currentToken.value));
@@ -102,7 +102,7 @@ Expr *Parser::_handleFunctionDeclaration(std::string type, std::string identifie
                     scopes.back()->addVariable((*it)->getName(), (*it));
                 }
             }
-            definition = new FunctionDefinition(prototype, _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back()));
+            definition = new FunctionExpr(prototype, _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back()));
             scopes.pop_back();
             return definition;
             break;
@@ -111,7 +111,7 @@ Expr *Parser::_handleFunctionDeclaration(std::string type, std::string identifie
         }
     }
 
-    return new FunctionDefinition(prototype, body);
+    return new FunctionExpr(prototype, body);
 }
 
 FunctionArgumentExpr *Parser::_handleParameterDeclaratrion(std::string type)
@@ -125,7 +125,7 @@ FunctionArgumentExpr *Parser::_handleParameterDeclaratrion(std::string type)
     return new FunctionArgumentExpr(type, m_currentToken.value);
 }
 
-BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<Expr *> &args, Scope *scope)
+BlockExpr *Parser::_handleBlockDeclaration(const std::vector<Expr *> &args, Scope *scope)
 {
     std::vector<Expr *> expressions;
     while (m_currentToken.type != TOKEN_EOF) {
@@ -146,7 +146,7 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<Expr *> &args
             //        case TOKEN_ENUM:
             //            break;
         case TOKEN_CLOSE_BRACES:
-            return new BlockDefinition(expressions);
+            return new BlockExpr(expressions);
         default:
             // TODO: push only valid expressions
             expressions.push_back(_handleExpression());
@@ -158,7 +158,7 @@ BlockDefinition *Parser::_handleBlockDeclaration(const std::vector<Expr *> &args
         _getNextToken();
     }
 
-    return new BlockDefinition(expressions);
+    return new BlockExpr(expressions);
 }
 
 Expr *Parser::_handleNumberExpression()
@@ -200,7 +200,7 @@ Expr *Parser::_handleCallFunctionExpression(std::string identifier)
             break;
         }
     }
-    return new CallExpression(identifier, args);
+    return new CallExpr(identifier, args);
 }
 
 Expr *Parser::_handleIdentifierExpression()
@@ -253,7 +253,8 @@ Expr *Parser::_handlePrimaryExpression()
 
 Expr *Parser::_handleIfStatement()
 {
-    Expr *expr, *ifBlock, *elseBlock = NULL;
+    Expr *expr;
+    BlockExpr *ifBlock, *elseBlock = NULL;
     _getNextToken();
     if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
         printf("'(' expected on line: %d", m_currentToken.line);
@@ -273,10 +274,12 @@ Expr *Parser::_handleIfStatement()
         ifBlock = _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back());
         scopes.pop_back();
     } else {
-        ifBlock = _handleExpression();
+        std::vector<Expr *> expressions;
+        expressions.push_back(_handleExpression());
+        ifBlock = new BlockExpr(expressions);
     }
 
-    return new IfStatmentExpression(expr, ifBlock, elseBlock);
+    return new IfExpr(expr, ifBlock, elseBlock);
 }
 
 Expr *Parser::_handleWhileLoop()
@@ -349,7 +352,7 @@ Expr *Parser::_handleBinaryOperationExpression(int ExprPrec, Expr *LHS)
         }
 
         // Merge LHS/RHS.
-        LHS = new BinaryExpression(BinOp.type, LHS, RHS);
+        LHS = new BinaryExpr(BinOp.type, LHS, RHS);
     }
 }
 
@@ -366,7 +369,7 @@ Parser::Parser(Lexer *lexer) : m_lexer(lexer), m_binopPrecedence()
     m_binopPrecedence['*'] = 40;
 }
 
-BlockDefinition *Parser::parse()
+BlockExpr *Parser::parse()
 {
     _getNextToken();
     scopes.push_back(new Scope());
