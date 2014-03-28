@@ -60,6 +60,8 @@ llvm::Value *IfExpr::emitCode(llvm::IRBuilder<>& builder, llvm::Module &module)
     PN->addIncoming(ThenV, ThenBB);
     if (m_elseBlock) {
         PN->addIncoming(ElseV, ElseBB);
+    } else {
+        PN->addIncoming(ThenV, ElseBB);
     }
     return PN;
 }

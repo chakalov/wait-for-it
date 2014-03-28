@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     ast/functionprototypeexpr.cpp \
     ast/blockexpr.cpp \
     ast/functionexpr.cpp \
-    ast/ifexpr.cpp
+    ast/ifexpr.cpp \
+    ast/whileexpr.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -40,7 +41,8 @@ OTHER_FILES += \
     test8.txt \
     test9.txt \
     test10.txt \
-    test11.txt
+    test11.txt \
+    main2.txt
 
 HEADERS += \
     lexer.h \
@@ -64,5 +66,6 @@ HEADERS += \
     ast/functionprototypeexpr.h \
     ast/blockexpr.h \
     ast/functionexpr.h \
-    ast/ifexpr.h
+    ast/ifexpr.h \
+    ast/whileexpr.h
 

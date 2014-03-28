@@ -284,7 +284,8 @@ Expr *Parser::_handleIfStatement()
 
 Expr *Parser::_handleWhileLoop()
 {
-    Expr *expr, *whileBlock;
+    Expr *expr;
+    BlockExpr *whileBlock;
 
     _getNextToken();
     if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
@@ -306,10 +307,12 @@ Expr *Parser::_handleWhileLoop()
         whileBlock = _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back());
         scopes.pop_back();
     } else {
-        whileBlock = _handleExpression();
+        std::vector<Expr *> expressions;
+        expressions.push_back(_handleExpression());
+        whileBlock = new BlockExpr(expressions);
     }
 
-    return new WhileLoop(expr, whileBlock);
+    return new WhileExpr(expr, whileBlock);
 }
 
 Expr *Parser::_handleExpression()

@@ -15,6 +15,7 @@
 #include "ast/blockexpr.h"
 #include "ast/functionexpr.h"
 #include "ast/ifexpr.h"
+#include "ast/whileexpr.h"
 
 //#include "llvm/IR/Verifier.h"
 //#include "llvm/IR/DerivedTypes.h"
@@ -25,14 +26,5 @@
 //#include <llvm/ADT/StringSwitch.h>
 //#include <string>
 //#include <vector>
-
-class WhileLoop: public BaseExpression {
-    BaseExpression  *m_expression;
-    BaseExpression *m_block;
-public:
-    WhileLoop(BaseExpression *expression, BaseExpression *Block);
-    virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module);
-};
-}
 
 #endif // AST_H

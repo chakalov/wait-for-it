@@ -54,7 +54,7 @@ int main ()
     llvm::Function *printf_func = printf_prototype(Context, module);
     //llvm::Function *scanf_func = scanf_prototype(Context, module);
 
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/main.txt");
+    Lexer lexer("/home/chakalov/qtprojects/llvm/main2.txt");
 
     Parser parser(&lexer);
 
@@ -63,6 +63,7 @@ int main ()
     ast->emitCode(builder, *module);
 
     builder.CreateRet(ConstantInt::get(getGlobalContext(), APInt(32, 5)));
+
     module->dump();
 
     llvm::InitializeNativeTarget();
