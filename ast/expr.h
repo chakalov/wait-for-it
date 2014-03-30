@@ -13,6 +13,7 @@ class Expr
 public:
     virtual ~Expr();
     llvm::Type *getLLVMType(llvm::IRBuilder<> &builder, std::string type);
+    llvm::Value *typecast(llvm::IRBuilder<>& builder, llvm::Value *value, llvm::Type *type);
     virtual llvm::Value *emitCode(llvm::IRBuilder<>& builder, llvm::Module &module) = 0;
 };
 

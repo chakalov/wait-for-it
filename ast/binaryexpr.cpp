@@ -20,6 +20,11 @@ llvm::Value *BinaryExpr::emitCode(llvm::IRBuilder<>& builder, llvm::Module &modu
         if (L == 0 || R == 0) {
             return 0;
         }
+
+//        if (L->getType() != R->getType()) {
+//            R = typecast(builder, R, L->getType());
+//        }
+
         return builder.CreateStore(R, L);
     }
 

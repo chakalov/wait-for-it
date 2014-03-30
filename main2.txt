@@ -1,6 +1,18 @@
+double test;
+
 void main(int maina)
 {
-    if (1.0) {
-        printf("Yess!\n");
+    test = 5.0;
+    if (test) {
+        printf("Yess! %f\n", test);
+    }
+    while (test) {
+        test = test - 1.0;
+        printf("While: %f\n", test);
+    }
+    if (test) {
+        printf("Yess! %f\n", test);
+    } else {
+        printf("Nooo! %f\n", test);
     }
 }

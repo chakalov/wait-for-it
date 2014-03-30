@@ -5,7 +5,7 @@
 
 namespace wait_for_it {
 
-class Int32NumberExpr: public Expr {
+class Int32NumberExpr: public NumberExpr {
     long m_val;
 public:
     Int32NumberExpr(long val);
