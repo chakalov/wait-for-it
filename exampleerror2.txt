@@ -1,0 +1,12 @@
+short global;
+
+void main int maina)
+{
+    int mainaa,,;
+    global = 1;
+    mainaa = 2;
+    printf("Test: \"[%s, %s]\"\n", "test", "tes2");
+    printf("Test nums: %f %d\n", 200.0, mainaa);
+    mainaa = mainaa + maina;
+    printf("[%d][%d]\n", maina, mainaa);
+}

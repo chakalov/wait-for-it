@@ -42,7 +42,9 @@ OTHER_FILES += \
     test9.txt \
     test10.txt \
     test11.txt \
-    main2.txt
+    main2.txt \
+    testwitherrors1.txt \
+    exampleerror2.txt
 
 HEADERS += \
     lexer.h \
