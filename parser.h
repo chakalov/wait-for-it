@@ -36,9 +36,11 @@ class Parser
     Expr *_handlePrimaryExpression();
     Expr *_handleExpression();
     Expr *_handleBinaryOperationExpression(int ExprPrec, Expr *LHS);
+    bool emitCode = true;
 public:
     Parser(Lexer *lexer);
     BlockExpr *parse();
+    bool canEmit();
 };
 
 }

@@ -54,25 +54,26 @@ int main ()
     llvm::Function *printf_func = printf_prototype(Context, module);
     //llvm::Function *scanf_func = scanf_prototype(Context, module);
 
-    Lexer lexer("/home/chakalov/qtprojects/llvm/main2.txt");
+    Lexer lexer("/home/spas/qtprojects/wait-for-it/main2.txt");
 
     Parser parser(&lexer);
 
     BlockExpr *ast = parser.parse();
-
-    ast->emitCode(builder, *module);
-
+    if ( parser.canEmit() ) {
+        ast->emitCode(builder, *module);
+    }
     builder.CreateRet(ConstantInt::get(getGlobalContext(), APInt(32, 5)));
 
-    module->dump();
-
+    if ( parser.canEmit() ) {
+        module->dump();
+    }
     llvm::InitializeNativeTarget();
 
     std::string ErrStr;
     //llvm::ExecutionEngine *engine = llvm::EngineBuilder(module).setErrorStr(&ErrStr).create();
     llvm::ExecutionEngine *engine = llvm::ExecutionEngine::create(module);
 
-    if(engine) {
+    if(engine && parser.canEmit()) {
         llvm::Function* mainFunction = module->getFunction("main");
         if(!mainFunction)
         {

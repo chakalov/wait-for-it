@@ -83,7 +83,8 @@ FunctionExpr *Parser::_handleFunctionDeclaration(std::string type, std::string i
         case TOKEN_COMMA:
             _getNextToken();
             if (m_currentToken.type == TOKEN_COMMA) {
-                // printf("Error on line %d: unexpected token ','", m_currentToken.line);
+                 printf("Error on line %d: unexpected token ','", m_currentToken.line);
+                 emitCode = false;
             }
             break;
         case TOKEN_CLOSE_PARENTHESES:
@@ -184,7 +185,8 @@ CallExpr *Parser::_handleCallFunctionExpression(std::string identifier)
         case TOKEN_COMMA:
             _getNextToken();
             if (m_currentToken.type == TOKEN_COMMA) {
-                // printf("Error on line %d: unexpected token ','", m_currentToken.line);
+                 printf("Error on line %d: unexpected token ','", m_currentToken.line);
+                 emitCode = false;
             }
             break;
         case TOKEN_CLOSE_PARENTHESES:
@@ -260,12 +262,14 @@ IfExpr *Parser::_handleIfStatement()
     _getNextToken();
     if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
         printf("'(' expected on line: %d", m_currentToken.line);
+        emitCode = false;
     }
     _getNextToken();
     expr = _handleExpression();
 
     if(m_currentToken.type != TOKEN_CLOSE_PARENTHESES) {
         printf("')' expected on line: %d", m_currentToken.line);
+        emitCode = false;
     }
 
     _getNextToken();
@@ -310,6 +314,7 @@ WhileExpr *Parser::_handleWhileLoop()
     _getNextToken();
     if(m_currentToken.type != TOKEN_OPEN_PARENTHESES) {
         printf("'(' expected on line: %d", m_currentToken.line);
+        emitCode = false;
     }
 
     _getNextToken();
@@ -317,6 +322,7 @@ WhileExpr *Parser::_handleWhileLoop()
 
     if(m_currentToken.type != TOKEN_CLOSE_PARENTHESES) {
         printf("')' expected on line: %d", m_currentToken.line);
+        emitCode = false;
     }
 
     _getNextToken();
@@ -340,7 +346,8 @@ Expr *Parser::_handleExpression()
     Expr *LHS;
     LHS = _handlePrimaryExpression();
     if (!LHS) {
-        printf("nqkva gre6ka");
+        printf("\n ERROR: general parse error something is very wrong line: %d\n", m_currentToken.line);
+        emitCode = false;
     }
     return _handleBinaryOperationExpression(0, LHS);
 }
@@ -398,4 +405,9 @@ BlockExpr *Parser::parse()
     scopes.push_back(new Scope());
     return _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back());
     scopes.pop_back();
+}
+
+bool Parser::canEmit()
+{
+    return emitCode;
 }
