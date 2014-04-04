@@ -16,6 +16,7 @@
 #include "ast/functionexpr.h"
 #include "ast/ifexpr.h"
 #include "ast/whileexpr.h"
+#include "ast/infiniteexpr.h"
 
 //#include "llvm/IR/Verifier.h"
 //#include "llvm/IR/DerivedTypes.h"

@@ -29,6 +29,7 @@ class Parser
     BlockExpr *_handleBlockDeclaration(const std::vector<Expr *> &args, Scope *scope);
     IfExpr *_handleIfStatement();
     WhileExpr *_handleWhileLoop();
+    InfiniteExpr *_handleInfiniteLoop();
     NumberExpr *_handleNumberExpression();
     CallExpr *_handleCallFunctionExpression(std::string identifier);
     Expr *_handleIdentifierExpression();

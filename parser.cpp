@@ -142,6 +142,10 @@ BlockExpr *Parser::_handleBlockDeclaration(const std::vector<Expr *> &args, Scop
             expressions.push_back(_handleWhileLoop());
             _getNextToken();
             break;
+        case TOKEN_INFINITE:
+            expressions.push_back(_handleInfiniteLoop());
+            _getNextToken();
+            break;
             //        case TOKEN_STRUCT:
             //            break;
             //        case TOKEN_UNION:
@@ -341,6 +345,27 @@ WhileExpr *Parser::_handleWhileLoop()
     return new WhileExpr(expr, whileBlock);
 }
 
+InfiniteExpr *Parser::_handleInfiniteLoop()
+{
+    BlockExpr *whileBlock;
+
+    _getNextToken();
+    _getNextToken(); // eat the loop
+
+    if(m_currentToken.type == TOKEN_OPEN_BRACES) {
+        _getNextToken();
+        scopes.push_back(new Scope(scopes.back()->getLevel() + 1));
+        whileBlock = _handleBlockDeclaration(*(new std::vector<Expr *>()), scopes.back());
+        scopes.pop_back();
+    } else {
+        std::vector<Expr *> expressions;
+        expressions.push_back(_handleExpression());
+        whileBlock = new BlockExpr(expressions);
+    }
+
+    return new InfiniteExpr(whileBlock);
+}
+
 Expr *Parser::_handleExpression()
 {
     Expr *LHS;
@@ -355,7 +380,15 @@ Expr *Parser::_handleExpression()
 Expr *Parser::_handleBinaryOperationExpression(int ExprPrec, Expr *LHS)
 {
     while (1) {
-        int TokPrec = m_binopPrecedence[(char) m_currentToken.type];
+        int TokPrec;
+
+        if (m_binopPrecedence.at((char) m_currentToken.type)) {
+            TokPrec = m_binopPrecedence[(char) m_currentToken.type];
+        } else {
+            printf("Unknow operation on line: %d\n", m_currentToken.line);
+            emitCode = false;
+            TokPrec = 0;
+        }
 
         if (TokPrec < ExprPrec) {
             return LHS;

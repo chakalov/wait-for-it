@@ -53,7 +53,11 @@ enum TokenType {
     TOKEN_MINUS = '-',
     TOKEN_ASTERISK = '*',
     TOKEN_DIVIDE = '/',
-    TOKEN_ELLIPSIS = '.'
+    TOKEN_ELLIPSIS = '.',
+
+    // exam
+    TOKEN_INFINITE = '^',
+    TOKEN_LOOP = 'l'
 };
 
 struct Token {

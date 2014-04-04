@@ -1,0 +1,16 @@
+double test;
+
+void rec(double n)
+{
+    printf("Rec: %f\n", n);
+    if (n) {
+        rec(n - 1.0);
+    }
+}
+
+void main(int maina)
+{
+    test = 5.0;
+    printf("START!!!\n");
+    rec(test);
+}

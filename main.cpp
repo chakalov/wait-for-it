@@ -54,15 +54,17 @@ int main ()
     llvm::Function *printf_func = printf_prototype(Context, module);
     //llvm::Function *scanf_func = scanf_prototype(Context, module);
 
-    Lexer lexer("/home/spas/qtprojects/wait-for-it/main2.txt");
+    Lexer lexer("/home/chakalov/qtprojects/llvm/main2_wrong_operator.txt");
 
     Parser parser(&lexer);
 
     BlockExpr *ast = parser.parse();
     if ( parser.canEmit() ) {
         ast->emitCode(builder, *module);
+    } else {
+        return 1;
     }
-    builder.CreateRet(ConstantInt::get(getGlobalContext(), APInt(32, 5)));
+    //builder.CreateRet(ConstantInt::get(getGlobalContext(), APInt(32, 5)));
 
     if ( parser.canEmit() ) {
         module->dump();

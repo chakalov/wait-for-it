@@ -1,0 +1,6 @@
+void main(int maina)
+{
+    infinite loop {
+        printf("Test!\n");
+    }
+}

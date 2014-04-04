@@ -2,12 +2,12 @@ double test;
 
 void main(int maina)
 {
-    test = 5.0 - 1.0;
+    test = 5.0 $ 1.0;
     if (test) {
         printf("Yess! %f\n", test);
     }
     while (test) {
-        test = test - 1.0;
+        test = test # 1.0;
         printf("While: %f\n", test);
     }
     if (test) {

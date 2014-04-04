@@ -17,6 +17,7 @@ llvm::Value *FunctionExpr::emitCode(llvm::IRBuilder<>& builder, llvm::Module &mo
     builder.SetInsertPoint(block);
     m_prototype->allocateArguments(builder, module);
     m_body->emitCode(builder, module);
+    builder.CreateRet(llvm::ConstantInt::get(builder.getContext(), llvm::APInt(32, 5)));
 
     return functionPrototype;
 }

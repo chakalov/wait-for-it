@@ -99,6 +99,7 @@ Token Lexer::getNextToken()
                 .Case("continue", TOKEN_CONTINUE)
                 .Case("break", TOKEN_BREAK)
                 .Case("return", TOKEN_RETURN)
+                .Case("infinite", TOKEN_INFINITE)
                 .Default(TOKEN_IDENTIFIER);
 
         return token;

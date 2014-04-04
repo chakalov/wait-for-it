@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     ast/blockexpr.cpp \
     ast/functionexpr.cpp \
     ast/ifexpr.cpp \
-    ast/whileexpr.cpp
+    ast/whileexpr.cpp \
+    ast/infiniteexpr.cpp
 
 OTHER_FILES += \
     CMakeLists.txt \
@@ -44,7 +45,10 @@ OTHER_FILES += \
     test11.txt \
     main2.txt \
     testwitherrors1.txt \
-    exampleerror2.txt
+    exampleerror2.txt \
+    main_rec.txt \
+    main_exam.txt \
+    main2_wrong_operator.txt
 
 HEADERS += \
     lexer.h \
@@ -69,5 +73,6 @@ HEADERS += \
     ast/blockexpr.h \
     ast/functionexpr.h \
     ast/ifexpr.h \
-    ast/whileexpr.h
+    ast/whileexpr.h \
+    ast/infiniteexpr.h
 
